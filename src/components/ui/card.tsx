@@ -9,7 +9,7 @@ type CardProps = {
 }
 
 export function Card({ article }: CardProps) {
-    const featured = article.featured;
+    const featured = article.featured || false;
     // const isPremium = true;
 
     return (

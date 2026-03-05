@@ -23,11 +23,6 @@ export type Article = {
   tags: string[];
 };
 
-export type ApiResponse<T> = {
-  success: boolean;
-  data: T;
-};
-
 export type BreakingNews = {
   id: string;
   headline: string;
