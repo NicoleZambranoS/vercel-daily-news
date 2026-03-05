@@ -3,6 +3,7 @@ import SearchComponent from '@/components/ui/search';
 import { getCategories } from '@/lib/api';
 import Filters from '@/components/ui/filters';
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
     title: 'Search Results',
@@ -10,7 +11,6 @@ export const metadata: Metadata = {
 }
 
 export default async function SearchPage() {
-
     // Fetch categories
     const categories = await getCategories();
 
@@ -43,10 +43,14 @@ export default async function SearchPage() {
                         </p>
 
                         {/* Search and Filters */}
-                        <SearchComponent placeholder="Search articles" />
+                        <Suspense>
+                            <SearchComponent placeholder="Search articles" />
+                        </Suspense>
                         <div className="flex items-center justify-between mb-5 p-6">
                             <h3 className="font-semibold text-lg">Filter by Category</h3>
-                            <Filters categories={categories} />
+                            <Suspense>
+                                <Filters categories={categories} />
+                            </Suspense>
                         </div>
                     </div>
                 </div>
