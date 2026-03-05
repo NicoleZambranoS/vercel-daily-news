@@ -1,4 +1,3 @@
-import { Search, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -30,22 +29,10 @@ export default function Header() {
                         </nav>
                     </div>
 
-                    <div className="flex items-center space-x-3">
-                        <Link
-                            href="/search"
-                            className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <Search className="w-5 h-5 text-gray-600" />
-                        </Link>
-                        {/* TODO: Add subscription logic */}
-                        {/* {isSubscribed && (
-                            <div className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-                                PRO
-                            </div>
-                        )} */}
-                        <button className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors">
-                            <User className="w-5 h-5 text-gray-600" />
-                        </button>
+
+                    {/* TODO: Add subscription logic */}
+                    <div className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                        PRO
                     </div>
                 </div>
             </div>
