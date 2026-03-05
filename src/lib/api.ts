@@ -1,4 +1,4 @@
-import { Article, ApiResponse } from "@/types/article";
+import { Article, ApiResponse, BreakingNews } from "@/types/article";
 
 const BASE_URL = process.env.VERCEL_API_URL!;
 const BYPASS_TOKEN = process.env.VERCEL_PROTECTION_BYPASS!;
@@ -35,11 +35,11 @@ export async function getFeaturedArticles(): Promise<Article[]> {
   return articles || [];
 }
 
-export async function getBreakingNews(): Promise<Article[]> {
-  const articles = await fetchApi<Article[]>(`/articles/trending`, {
+export async function getBreakingNews(): Promise<BreakingNews | null> {
+  const breakingNews = await fetchApi<BreakingNews>(`/breaking-news`, {
     next: { revalidate: 3600 },
   });
-  return articles || [];
+  return breakingNews;
 }
 
 export async function getArticleDetails(slug: string): Promise<Article | null> {
@@ -47,4 +47,18 @@ export async function getArticleDetails(slug: string): Promise<Article | null> {
     next: { revalidate: 3600 },
   });
   return article || null;
+}
+
+export async function getTrendingNews(): Promise<Article[]> {
+  const trendingNews = await fetchApi<Article[]>(`/articles/trending`, {
+    next: { revalidate: 3600 },
+  });
+  return trendingNews || [];
+}
+
+export async function getCategories(): Promise<string[]> {
+  const categories = await fetchApi<string[]>("/categories", {
+    next: { revalidate: 3600 },
+  });
+  return categories || [];
 }
