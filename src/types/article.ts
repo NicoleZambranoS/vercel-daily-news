@@ -2,7 +2,7 @@ export type ContentBlock =
     | { type: "paragraph"; text: string }
     | { type: "unordered-list"; items: string[] }
     | { type: "ordered-list"; items: string[] }
-    | { type: "heading"; text: string }
+    | { type: "heading"; text: string; level?: number }
     | { type: "image"; src: string; alt?: string };
 
 export type Article = {
