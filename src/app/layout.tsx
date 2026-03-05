@@ -7,9 +7,9 @@ import { Footer } from "@/components/footer";
 export const metadata: Metadata = {
   title: {
     template: '%s | Vercel Daily News',
-    default: 'News for Web Developers',
+    default: 'Vercel Daily News',
   },
-  description: 'Vercel Daily News is a daily newsletter for web developers. It is a collection of the latest news and insights for web developers.',
+  description: 'The latest news, tutorials, and insights for modern web developers.',
   metadataBase: new URL('https://vercel-daily-news.vercel.app/'),
   openGraph: {
     title: 'Vercel Daily News',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     ],
     locale: 'en_US',
     type: 'website',
-  }
+  },
 };
 
 export default function RootLayout({
