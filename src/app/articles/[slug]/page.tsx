@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, Lock, Share2, Bookmark, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Lock, Share2, Bookmark, TrendingUp } from 'lucide-react';
 import { getArticleDetails, getTrendingNews } from '@/lib/api';
 import Link from 'next/link';
 import { formatDate } from '@/lib/format';
@@ -27,14 +27,14 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
     }
 
     // Get trending articles only if the article is fetched successfully
-    const trendingArticles = await getTrendingNews();
+    const trendingArticles = await getTrendingNews(article.id);
     const isLocked = false;
 
     return (
         <>
             <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
                 <Link
-                    href="/"
+                    href="/search"
                     className="inline-flex items-center space-x-2 text-gray-600 hover:text-black transition-colors mb-10 group"
                 >
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -48,11 +48,6 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
                         </span>
                         <span className="text-gray-400">•</span>
                         <span className="text-sm text-gray-600">{formatDate(article.publishedAt)}</span>
-                        <span className="text-gray-400">•</span>
-                        <div className="flex items-center space-x-1.5 text-sm text-gray-600">
-                            <Clock className="w-4 h-4" />
-                            {/* <span>{article.readTime} min read</span> */}
-                        </div>
                     </div>
 
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 leading-[1.1] tracking-tight text-gray-900">
@@ -112,6 +107,7 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
                             <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto leading-relaxed">
                                 This article is exclusive to Vercel Daily Pro members. Subscribe to unlock this and all premium content.
                             </p>
+                            {/* TODO: Add a subscription logic */}
                             {/* <button
                                     className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-10 py-4 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-xl shadow-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-105"
                                 >
@@ -126,7 +122,7 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
                     </div>
                 )}
 
-                {/* TODO: Add a subscription logi */}
+                {/* TODO: Add a subscription logic */}
                 {/* Upgrade to Pro */}
                 <div className="relative overflow-hidden bg-linear-to-r from-gray-900 via-black to-gray-900 text-white rounded-3xl p-12 sm:p-16 mb-16">
                     <div className="absolute inset-0 bg-linear-to-r from-purple-600/10 via-blue-600/10 to-purple-600/10" />
