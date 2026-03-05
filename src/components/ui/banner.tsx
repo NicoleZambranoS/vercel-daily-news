@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { Zap } from 'lucide-react';
 import { BreakingNews } from '@/types/article';
 
@@ -15,7 +14,7 @@ export function Banner({ news }: BannerProps) {
             <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
 
             <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-3.5 relative">
-                <Link href={news.slug || ''} className="flex items-center gap-4 group">
+                <div className="flex items-center gap-4 group">
 
                     {/* Left badge */}
                     <div className="flex items-center gap-2.5 shrink-0">
@@ -36,7 +35,7 @@ export function Banner({ news }: BannerProps) {
                             {news.headline}
                         </span>
                     </div>
-                </Link>
+                </div>
             </div>
         </div>
     );
