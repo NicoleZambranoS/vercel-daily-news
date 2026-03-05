@@ -5,8 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Banner } from "@/components/ui/banner";
 
 export default async function Home() {
-  const featuredArticles = await getFeaturedArticles();
-  const breakingNews = await getBreakingNews();
+  // Parallel fetch
+  const [featuredArticles, breakingNews] = await Promise.all([
+    getFeaturedArticles(),
+    getBreakingNews(),
+  ]);
 
   return (
     <div>
