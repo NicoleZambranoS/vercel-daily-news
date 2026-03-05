@@ -1,9 +1,22 @@
 import { ArrowRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { getFeaturedArticles, getBreakingNews } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { Banner } from "@/components/ui/banner";
 
-export default function Home() {
+export default async function Home() {
+  const featuredArticles = await getFeaturedArticles();
+  const breakingNews = await getBreakingNews();
+
   return (
     <div>
+      <Banner
+        items={breakingNews.map((article) => ({
+          title: article.title,
+          link: `/articles/${article.slug}`,
+        }))}
+      />
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-20 sm:py-28 relative">
@@ -44,6 +57,28 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 pb-24">
+        {/* Featured Section */}
+        <section id="featured" className="mb-20">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <p className="text-sm text-purple-600 font-semibold uppercase tracking-wider mb-2">Featured Stories</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">&quot;Editor&apos;s Picks&quot;</h2>
+            </div>
+            <a href="#all" className="text-sm text-gray-600 hover:text-black transition-colors hidden sm:flex items-center space-x-1 group">
+              <span>View all</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredArticles.map((article) => (
+              <Card key={article.id} article={article} />
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );
