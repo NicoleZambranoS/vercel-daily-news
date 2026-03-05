@@ -1,4 +1,5 @@
-import { Article, ApiResponse, BreakingNews } from "@/types/article";
+import { ApiResponse, PaginationMeta } from "@/types/api";
+import { Article, BreakingNews } from "@/types/article";
 import { Category } from "@/types/categories";
 
 const BASE_URL = process.env.VERCEL_API_URL!;
@@ -7,7 +8,7 @@ const BYPASS_TOKEN = process.env.VERCEL_PROTECTION_BYPASS!;
 async function fetchApi<T>(
   path: string,
   options?: RequestInit,
-): Promise<T | null> {
+): Promise<ApiResponse<T> | null> {
   try {
     const res = await fetch(`${BASE_URL}${path}`, {
       ...options,
@@ -22,7 +23,8 @@ async function fetchApi<T>(
     }
 
     const json: ApiResponse<T> = await res.json();
-    return json.data;
+
+    return json;
   } catch (error) {
     console.error(error);
     return null;
@@ -33,50 +35,65 @@ export async function getFeaturedArticles(): Promise<Article[]> {
   const articles = await fetchApi<Article[]>("/articles?featured=true", {
     next: { revalidate: 3600 },
   });
-  return articles || [];
+  return articles?.data || [];
 }
 
 export async function getBreakingNews(): Promise<BreakingNews | null> {
   const breakingNews = await fetchApi<BreakingNews>(`/breaking-news`, {
     next: { revalidate: 3600 },
   });
-  return breakingNews;
+  return breakingNews?.data || null;
 }
 
 export async function getArticles({
   searchParams,
 }: {
-  searchParams?: Promise<{ query?: string; category?: string }>;
-}): Promise<Article[]> {
-  const { query, category } = (await searchParams) ?? {};
+  searchParams?: Promise<{ query?: string; category?: string; page?: string }>;
+}): Promise<{ articles: Article[]; pagination: PaginationMeta }> {
+  const { query, category, page } = (await searchParams) ?? {};
 
   const params = new URLSearchParams({ limit: "5" });
   if (query) params.set("search", query);
   if (category) params.set("category", category);
+  if (page) params.set("page", page);
 
-  const articles = await fetchApi<Article[]>(`/articles?${params}`, {
+  const result = await fetchApi<Article[]>(`/articles?${params}`, {
     next: { revalidate: 3600 },
   });
-  return articles || [];
+
+  return {
+    articles: result?.data ?? [],
+    pagination: result?.meta?.pagination ?? {
+      page: 1,
+      limit: 5,
+      total: 0,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+  };
 }
 
 export async function getArticleDetails(slug: string): Promise<Article | null> {
   const article = await fetchApi<Article>(`/articles/${slug}`, {
     next: { revalidate: 3600 },
   });
-  return article || null;
+  return article?.data || null;
 }
 
-export async function getTrendingNews(): Promise<Article[]> {
-  const trendingNews = await fetchApi<Article[]>(`/articles/trending`, {
-    next: { revalidate: 3600 },
-  });
-  return trendingNews || [];
+export async function getTrendingNews(exclude: string): Promise<Article[]> {
+  const trendingNews = await fetchApi<Article[]>(
+    `/articles/trending?exclude=${exclude}`,
+    {
+      next: { revalidate: 3600 },
+    },
+  );
+  return trendingNews?.data || [];
 }
 
 export async function getCategories(): Promise<Category[]> {
   const categories = await fetchApi<Category[]>("/categories", {
     next: { revalidate: 3600 },
   });
-  return categories || [];
+  return categories?.data || [];
 }
