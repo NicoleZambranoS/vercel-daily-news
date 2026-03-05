@@ -20,7 +20,7 @@ export function Card({ article }: CardProps) {
         >
             <div className={`relative ${featured ? 'h-72' : 'h-56'} overflow-hidden bg-linear-to-br from-gray-100 to-gray-200`}>
                 <Image
-                    src={`https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80`}
+                    src={article.image}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     width={100}
