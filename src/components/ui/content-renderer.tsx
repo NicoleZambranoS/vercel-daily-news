@@ -1,4 +1,5 @@
 import { ContentBlock } from '@/types/article';
+import Image from 'next/image';
 import Link from 'next/link';
 
 // Parses inline **bold** and [text](url) within a string into React nodes
@@ -98,8 +99,7 @@ export function ContentRenderer({ blocks }: ContentRendererProps) {
                     case 'image':
                         return (
                             <figure key={i} className="my-8">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={block.src} alt={block.alt} className="w-full rounded-xl object-cover shadow-md" />
+                                <Image src={block.src} alt={block.alt || ''} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" priority />
                                 {block.caption && <figcaption className="mt-3 text-center text-sm text-gray-500">{block.caption}</figcaption>}
                             </figure>
                         );
