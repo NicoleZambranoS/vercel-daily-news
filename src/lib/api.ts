@@ -1,4 +1,5 @@
 import { Article, ApiResponse, BreakingNews } from "@/types/article";
+import { Category } from "@/types/categories";
 
 const BASE_URL = process.env.VERCEL_API_URL!;
 const BYPASS_TOKEN = process.env.VERCEL_PROTECTION_BYPASS!;
@@ -42,6 +43,23 @@ export async function getBreakingNews(): Promise<BreakingNews | null> {
   return breakingNews;
 }
 
+export async function getArticles({
+  searchParams,
+}: {
+  searchParams?: Promise<{ query?: string; category?: string }>;
+}): Promise<Article[]> {
+  const { query, category } = (await searchParams) ?? {};
+
+  const params = new URLSearchParams({ limit: "5" });
+  if (query) params.set("search", query);
+  if (category) params.set("category", category);
+
+  const articles = await fetchApi<Article[]>(`/articles?${params}`, {
+    next: { revalidate: 3600 },
+  });
+  return articles || [];
+}
+
 export async function getArticleDetails(slug: string): Promise<Article | null> {
   const article = await fetchApi<Article>(`/articles/${slug}`, {
     next: { revalidate: 3600 },
@@ -56,8 +74,8 @@ export async function getTrendingNews(): Promise<Article[]> {
   return trendingNews || [];
 }
 
-export async function getCategories(): Promise<string[]> {
-  const categories = await fetchApi<string[]>("/categories", {
+export async function getCategories(): Promise<Category[]> {
+  const categories = await fetchApi<Category[]>("/categories", {
     next: { revalidate: 3600 },
   });
   return categories || [];
