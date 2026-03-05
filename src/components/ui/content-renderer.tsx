@@ -1,5 +1,4 @@
 import { ContentBlock } from '@/types/article';
-import Image from 'next/image';
 import Link from 'next/link';
 
 // Parses inline **bold** and [text](url) within a string into React nodes
@@ -10,16 +9,13 @@ function parseInline(text: string): React.ReactNode[] {
     let match: RegExpExecArray | null;
 
     while ((match = pattern.exec(text)) !== null) {
-        // Plain text before this match
         if (match.index > lastIndex) {
             nodes.push(text.slice(lastIndex, match.index));
         }
 
         if (match[0].startsWith('**')) {
-            // Bold
             nodes.push(<strong key={match.index} className="font-semibold text-gray-900">{match[2]}</strong>);
         } else {
-            // Link
             const href = match[4];
             const isExternal = href.startsWith('http');
             nodes.push(
@@ -38,29 +34,11 @@ function parseInline(text: string): React.ReactNode[] {
         lastIndex = match.index + match[0].length;
     }
 
-    // Remaining plain text
     if (lastIndex < text.length) {
         nodes.push(text.slice(lastIndex));
     }
 
     return nodes;
-}
-
-const headingClass: Record<number, string> = {
-    1: 'text-3xl sm:text-4xl font-bold text-gray-900 mt-12 mb-4',
-    2: 'text-2xl sm:text-3xl font-bold text-gray-900 mt-10 mb-4',
-    3: 'text-xl sm:text-2xl font-semibold text-gray-900 mt-8 mb-3',
-    4: 'text-lg font-semibold text-gray-900 mt-6 mb-2',
-};
-
-function HeadingBlock({ text, level = 3 }: { text: string; level?: number }) {
-    const cls = headingClass[level] ?? headingClass[3];
-    const content = parseInline(text);
-
-    if (level === 1) return <h1 className={cls}>{content}</h1>;
-    if (level === 2) return <h2 className={cls}>{content}</h2>;
-    if (level === 4) return <h4 className={cls}>{content}</h4>;
-    return <h3 className={cls}>{content}</h3>;
 }
 
 type ContentRendererProps = {
@@ -80,7 +58,16 @@ export function ContentRenderer({ blocks }: ContentRendererProps) {
                         );
 
                     case 'heading':
-                        return <HeadingBlock key={i} text={block.text} level={block.level} />;
+                        return block.level === 2
+                            ? <h2 key={i} className="text-2xl sm:text-3xl font-bold text-gray-900 mt-10 mb-4">{parseInline(block.text)}</h2>
+                            : <h3 key={i} className="text-xl sm:text-2xl font-semibold text-gray-900 mt-8 mb-3">{parseInline(block.text)}</h3>;
+
+                    case 'blockquote':
+                        return (
+                            <blockquote key={i} className="border-l-4 border-gray-300 pl-5 py-1 text-gray-600 italic text-base sm:text-lg leading-8">
+                                {parseInline(block.text)}
+                            </blockquote>
+                        );
 
                     case 'unordered-list':
                         return (
@@ -111,21 +98,11 @@ export function ContentRenderer({ blocks }: ContentRendererProps) {
                     case 'image':
                         return (
                             <figure key={i} className="my-8">
-                                <Image
-                                    src={block.src}
-                                    alt={block.alt ?? ''}
-                                    className="w-full rounded-xl object-cover shadow-md"
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                />
-                                {block.alt && (
-                                    <figcaption className="mt-3 text-center text-sm text-gray-500">{block.alt}</figcaption>
-                                )}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={block.src} alt={block.alt} className="w-full rounded-xl object-cover shadow-md" />
+                                {block.caption && <figcaption className="mt-3 text-center text-sm text-gray-500">{block.caption}</figcaption>}
                             </figure>
                         );
-
-                    default:
-                        return null;
                 }
             })}
         </div>
