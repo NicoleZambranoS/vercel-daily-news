@@ -7,7 +7,7 @@ import { Footer } from "@/components/footer";
 export const metadata: Metadata = {
   title: {
     template: '%s | Vercel Daily News',
-    default: 'Vercel Daily News',
+    default: 'News for Web Developers',
   },
   description: 'Vercel Daily News is a daily newsletter for web developers. It is a collection of the latest news and insights for web developers.',
   metadataBase: new URL('https://vercel-daily-news.vercel.app/'),

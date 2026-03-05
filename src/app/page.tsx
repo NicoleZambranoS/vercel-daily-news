@@ -3,12 +3,6 @@ import Link from "next/link";
 import { getFeaturedArticles, getBreakingNews } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Banner } from "@/components/ui/banner";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: 'Daily News for Web Developers',
-  description: 'Vercel Daily News is a daily newsletter for web developers. It is a collection of the latest news and insights for web developers.',
-};
 
 export default async function Home() {
   // Parallel fetch
