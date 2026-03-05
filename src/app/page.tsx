@@ -13,12 +13,7 @@ export default async function Home() {
 
   return (
     <div>
-      <Banner
-        items={breakingNews.map((article) => ({
-          title: article.title,
-          link: `/articles/${article.slug}`,
-        }))}
-      />
+      <Banner news={breakingNews} />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
