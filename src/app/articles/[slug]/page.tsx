@@ -1,5 +1,5 @@
 import { ArrowLeft, Clock, Lock, Share2, Bookmark, TrendingUp } from 'lucide-react';
-import { getArticleDetails, getBreakingNews } from '@/lib/api';
+import { getArticleDetails, getTrendingNews } from '@/lib/api';
 import Link from 'next/link';
 import { formatDate } from '@/lib/format';
 import Image from 'next/image';
@@ -27,7 +27,7 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
     }
 
     // Get trending articles only if the article is fetched successfully
-    const trendingArticles = await getBreakingNews();
+    const trendingArticles = await getTrendingNews();
     const isLocked = false;
 
     return (
