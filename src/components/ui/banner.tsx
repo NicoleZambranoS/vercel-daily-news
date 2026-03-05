@@ -52,7 +52,7 @@ export function Banner({ items, intervalMs = 5000 }: BannerProps) {
     return (
         <div className="bg-linear-to-r from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
             {/* Shimmer overlay */}
-            <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent animate-pulse pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
 
             <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-3.5 relative">
                 <Link href={current.link} className="flex items-center gap-4 group">
