@@ -1,25 +1,20 @@
 'use client';
+
 import { Category } from "@/types/categories";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useUpdateSearchParams } from "@/hooks/use-update-search-params";
 
 type FiltersProps = {
     categories: Category[];
 }
 
 export default function Filters({ categories }: FiltersProps) {
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const { replace } = useRouter();
+    const { searchParams, updateParams } = useUpdateSearchParams();
 
     const handleCategoryChange = (categoryId: string) => {
-        const params = new URLSearchParams(searchParams);
-        params.set('page', '1');
-        if (categoryId && categoryId !== 'all') {
-            params.set('category', categoryId);
-        } else {
-            params.delete('category');
-        }
-        replace(`${pathname}?${params.toString()}`, { scroll: false });
+        updateParams({
+            page: '1',
+            category: categoryId && categoryId !== 'all' ? categoryId : null,
+        });
     }
 
     return (
