@@ -23,7 +23,7 @@ export default function Filters({ categories }: FiltersProps) {
     }
 
     return (
-        <select className="bg-white border-2 border-gray-200 rounded-2xl p-6 mb-6 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300" onChange={(e) => handleCategoryChange(e.target.value)}>
+        <select className="bg-white border-2 border-gray-200 rounded-2xl p-2 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300" onChange={(e) => handleCategoryChange(e.target.value)}>
             <option value="all">All</option>
             {categories.map(category => (
                 <option key={category.slug} value={category.slug} className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${searchParams.get('category') === category.slug
