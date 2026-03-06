@@ -13,7 +13,7 @@ export function Banner({ news }: BannerProps) {
             {/* Shimmer overlay */}
             <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
 
-            <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-3.5 relative">
+            <div className="site-container py-3.5 relative">
                 <div className="flex items-center gap-4 group">
 
                     {/* Left badge */}

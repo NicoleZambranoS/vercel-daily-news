@@ -108,11 +108,7 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
                                 This article is exclusive to Vercel Daily Pro members. Subscribe to unlock this and all premium content.
                             </p>
                             {/* TODO: Add a subscription logic */}
-                            {/* <button
-                                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-10 py-4 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-xl shadow-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-105"
-                                >
-                                    Subscribe to Read
-                                </button> */}
+                            {/* <button className="btn-gradient">Subscribe to Read</button> */}
                             <p className="text-sm text-gray-500 mt-4">Starting at $0 • Cancel anytime</p>
                         </div>
                     </div>
@@ -134,9 +130,7 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
                         <p className="text-gray-300 text-lg mb-8 max-w-xl leading-relaxed">
                             Subscribe to Vercel Daily Pro for unlimited access to all premium content, early releases, and exclusive insights.
                         </p>
-                        <button
-                            className="bg-white text-black px-8 py-4 rounded-xl hover:bg-gray-100 transition-all font-semibold shadow-2xl hover:scale-105"
-                        >
+                        <button className="btn-inverse">
                             Upgrade to Pro
                         </button>
                     </div>
@@ -145,12 +139,12 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
 
             {/* Trending Articles */}
             <div className="bg-linear-to-b from-gray-50 to-white py-20">
-                <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+                <div className="site-container">
                     <div className="flex items-center space-x-2 mb-10">
                         <TrendingUp className="w-6 h-6 text-purple-600" />
                         <h2 className="text-3xl font-bold text-gray-900">Trending Articles</h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="article-grid">
                         {trendingArticles.map((article) => (
                             <Card key={article.id} article={article} />
                         ))}

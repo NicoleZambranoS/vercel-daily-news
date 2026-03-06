@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function NotFound() {
     return (
         <main className="flex-1 flex items-center justify-center min-h-[calc(100vh-160px)] bg-white px-6">
-            <div className="max-w-[1400px] mx-auto flex flex-col items-center text-center gap-6">
+            <div className="site-container flex flex-col items-center text-center gap-6">
                 <Image src="/vercel-black.svg" alt="Vercel Daily" width={40} height={40} className="opacity-20" />
                 <h1 className="text-8xl font-semibold text-black tracking-tight">404</h1>
                 <p className="text-lg text-gray-600 max-w-md">

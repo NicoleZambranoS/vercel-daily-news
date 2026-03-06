@@ -17,7 +17,7 @@ export default async function Home() {
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-20 sm:py-28 relative">
+        <div className="site-container py-20 sm:py-28 relative">
           <div className="max-w-4xl">
             <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/60 backdrop-blur-sm border border-gray-200 rounded-full mb-8 shadow-sm">
               <TrendingUp className="w-4 h-4 text-purple-600" />
@@ -39,17 +39,11 @@ export default async function Home() {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <Link
-                href="/search"
-                className="group inline-flex items-center space-x-2 bg-black text-white px-8 py-4 rounded-xl hover:bg-gray-900 transition-all font-semibold shadow-xl shadow-black/10 hover:shadow-2xl hover:shadow-black/20 hover:scale-105"
-              >
+              <Link href="/search" className="group btn-primary space-x-2">
                 <span>Explore Articles</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link
-                href="/search"
-                className="inline-flex items-center space-x-2 bg-linear-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-xl shadow-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-105"
-              >
+              <Link href="/search" className="btn-gradient">
                 <span>Subscribe to Pro</span>
               </Link>
             </div>
@@ -57,7 +51,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 pb-24">
+      <div className="site-container pb-24">
         {/* Featured Section */}
         <section id="featured" className="mb-20">
           <div className="flex items-end justify-between mb-10">
@@ -71,7 +65,7 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="article-grid">
             {featuredArticles.map((article) => (
               <Card key={article.id} article={article} />
             ))}
