@@ -3,10 +3,10 @@
 import { Zap } from 'lucide-react';
 import { BreakingNews } from '@/types/article';
 
-type BannerProps = {
+type BreakingNewsBannerProps = {
     news: BreakingNews | null;
 }
-export function Banner({ news }: BannerProps) {
+export default function BreakingNewsBanner({ news }: BreakingNewsBannerProps) {
     if (!news) return null;
     return (
         <div className="bg-linear-to-r from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
