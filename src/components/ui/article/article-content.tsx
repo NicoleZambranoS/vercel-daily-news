@@ -1,12 +1,12 @@
 import { ContentBlock } from '@/types/article';
 import Image from 'next/image';
-import parseInline from './parse-inline';
+import parseInline from '@/components/ui/parse-inline';
 
-type ContentRendererProps = {
+type ArticleContentProps = {
     blocks: ContentBlock[];
 }
 
-export function ContentRenderer({ blocks }: ContentRendererProps) {
+export default function ArticleContent({ blocks }: ArticleContentProps) {
     return (
         <div className="space-y-5 text-gray-700 leading-relaxed">
             {blocks.map((block, i) => {

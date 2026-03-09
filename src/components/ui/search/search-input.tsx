@@ -1,23 +1,17 @@
 'use client';
 
 import { Search as SearchIcon } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
+import { useUpdateSearchParams } from '@/hooks/use-update-search-params';
 
-export default function Search({ placeholder }: { placeholder: string }) {
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const { replace } = useRouter();
+export default function SearchInput({ placeholder }: { placeholder: string }) {
+    const { searchParams, updateParams } = useUpdateSearchParams();
 
     const handleSearch = useDebouncedCallback((term: string) => {
-        const params = new URLSearchParams(searchParams);
-        params.set('page', '1');
-        if (term.length > 2) {
-            params.set('query', term);
-        } else {
-            params.delete('query');
-        }
-        replace(`${pathname}?${params.toString()}`, { scroll: false });
+        updateParams({
+            page: '1',
+            query: term.length > 2 ? term : null,
+        });
     }, 300);
 
     return (
