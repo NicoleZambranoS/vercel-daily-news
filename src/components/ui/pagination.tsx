@@ -1,7 +1,7 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useUpdateSearchParams } from '@/hooks/use-update-search-params';
 
 type PaginationProps = {
     currentPage: number;
@@ -9,17 +9,13 @@ type PaginationProps = {
 }
 
 export default function Pagination({ currentPage, totalPages }: PaginationProps) {
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const { replace } = useRouter();
+    const { updateParams } = useUpdateSearchParams();
 
     function goToPage(page: number) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('page', String(page));
-        replace(`${pathname}?${params.toString()}`, { scroll: false });
+        updateParams({ page: String(page) });
     }
 
-    // Build the visible page range: always show first, last, current +/- 1, with ellipsis gaps
+    // Build the visible page range
     function getPageRange(): (number | '...')[] {
         if (totalPages <= 7) {
             return Array.from({ length: totalPages }, (_, i) => i + 1);

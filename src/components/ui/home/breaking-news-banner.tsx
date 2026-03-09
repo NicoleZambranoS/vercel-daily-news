@@ -3,17 +3,17 @@
 import { Zap } from 'lucide-react';
 import { BreakingNews } from '@/types/article';
 
-type BannerProps = {
+type BreakingNewsBannerProps = {
     news: BreakingNews | null;
 }
-export function Banner({ news }: BannerProps) {
+export default function BreakingNewsBanner({ news }: BreakingNewsBannerProps) {
     if (!news) return null;
     return (
         <div className="bg-linear-to-r from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
             {/* Shimmer overlay */}
             <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
 
-            <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-3.5 relative">
+            <div className="site-container py-3.5 relative">
                 <div className="flex items-center gap-4 group">
 
                     {/* Left badge */}
