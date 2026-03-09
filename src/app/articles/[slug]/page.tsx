@@ -6,6 +6,7 @@ import TrendingArticles from '@/components/ui/article/trending-articles';
 import ArticleHeader from '@/components/ui/article/article-header';
 import FeaturedImage from '@/components/ui/article/featured-image';
 import SubscribeCTA from '@/components/ui/article/subscribe-cta';
+import { isSubscribed } from '@/lib/subscription';
 
 export const generateMetadata = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
@@ -19,8 +20,9 @@ export const generateMetadata = async ({ params }: { params: Promise<{ slug: str
 export default async function ArticleDetailPage(props: { params: Promise<{ slug: string }> }) {
     const params = await props.params;
     const slug = params.slug;
-    // Get article details
-    const article = await getArticleDetails(slug);
+
+    // Get article details and subscription status
+    const [article, subscribed] = await Promise.all([getArticleDetails(slug), isSubscribed()]);
 
     if (!article) {
         notFound();
@@ -37,11 +39,18 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
 
                 {/* Article Content */}
                 <div className="max-w-none mb-16">
-                    <ArticleContent blocks={article.content} />
+                    {
+                        !subscribed ? (
+                            <>
+                                <ArticleContent blocks={article.content.slice(0, 2)} />
+                                <div className="relative mt-16">
+                                    <div className="h-32 bg-linear-to-b from-transparent to-white absolute inset-x-0 -top-32 pointer-events-none" />
+                                    <SubscribeCTA />
+                                </div></>
+                        ) : (
+                            <ArticleContent blocks={article.content} />
+                        )}
                 </div>
-
-                {/* Subscribe CTA */}
-                <SubscribeCTA />
             </div>
 
             {/* Trending Articles*/}

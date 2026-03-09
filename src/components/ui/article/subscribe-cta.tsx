@@ -1,8 +1,10 @@
-export default function SubscribeCTA() {
-    {/* TODO: Add a subscription logic */ }
-    {/* Upgrade to Pro */ }
+import { subscribe } from "@/actions/subscription";
+
+
+export default async function SubscribeCTA() {
+
     return (
-        <div className="relative overflow-hidden bg-linear-to-r from-gray-900 via-black to-gray-900 text-white rounded-3xl p-12 sm:p-16 mb-16">
+        <form action={subscribe} className="relative overflow-hidden bg-linear-to-r from-gray-900 via-black to-gray-900 text-white rounded-3xl p-12 sm:p-16 mb-16">
             <div className="absolute inset-0 bg-linear-to-r from-purple-600/10 via-blue-600/10 to-purple-600/10" />
             <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
@@ -16,6 +18,6 @@ export default function SubscribeCTA() {
                     Upgrade to Pro
                 </button>
             </div>
-        </div>
+        </form>
     );
 }
