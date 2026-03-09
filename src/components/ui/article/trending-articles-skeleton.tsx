@@ -9,8 +9,8 @@ export default function TrendingArticlesSkeleton() {
                     <TrendingUp className="w-6 h-6 text-purple-600" />
                     <h2 className="text-3xl font-bold text-gray-900">Trending Articles</h2>
                 </div>
-                <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
+                <div className="article-grid">
+                    {Array.from({ length: 3 }).map((_, i) => (
                         <CardSkeleton key={i} />
                     ))}
                 </div>
