@@ -2,7 +2,6 @@ import { subscribe } from "@/actions/subscription";
 
 
 export default async function SubscribeCTA() {
-
     return (
         <form action={subscribe} className="relative overflow-hidden bg-linear-to-r from-gray-900 via-black to-gray-900 text-white rounded-3xl p-12 sm:p-16 mb-16">
             <div className="absolute inset-0 bg-linear-to-r from-purple-600/10 via-blue-600/10 to-purple-600/10" />
