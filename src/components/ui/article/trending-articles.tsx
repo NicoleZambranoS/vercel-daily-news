@@ -1,6 +1,6 @@
 import { TrendingUp } from "lucide-react"
-import { Card } from "@/components/ui/card";
 import { getTrendingNews } from "@/lib/api";
+import Card from '../card';
 
 type TrendingArticlesProps = {
     articleId: string;

@@ -4,7 +4,7 @@ import { Search as SearchIcon } from 'lucide-react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useUpdateSearchParams } from '@/hooks/use-update-search-params';
 
-export default function Search({ placeholder }: { placeholder: string }) {
+export default function SearchInput({ placeholder }: { placeholder: string }) {
     const { searchParams, updateParams } = useUpdateSearchParams();
 
     const handleSearch = useDebouncedCallback((term: string) => {

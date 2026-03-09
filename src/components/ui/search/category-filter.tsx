@@ -7,7 +7,7 @@ type FiltersProps = {
     categories: Category[];
 }
 
-export default function Filters({ categories }: FiltersProps) {
+export default function CategoryFilter({ categories }: FiltersProps) {
     const { searchParams, updateParams } = useUpdateSearchParams();
 
     const handleCategoryChange = (categoryId: string) => {

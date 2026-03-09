@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Article } from "@/types/article";
+import Card from '../card';
 
 type FeaturedArticlesProps = {
     featuredArticles: Article[];

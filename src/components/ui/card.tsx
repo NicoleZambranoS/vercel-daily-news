@@ -8,7 +8,7 @@ type CardProps = {
     article: Article;
 }
 
-export function Card({ article }: CardProps) {
+export default function Card({ article }: CardProps) {
     const featured = article.featured || false;
     // const isPremium = true;
 
