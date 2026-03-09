@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { isSubscribed } from "@/lib/subscription";
+import SubscriptionToggle from "@/components/ui/subscription/subscription-toggle";
 
-export default function Header() {
+export default async function Header() {
+    const subscribed = await isSubscribed();
 
     return (
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
@@ -15,21 +18,14 @@ export default function Header() {
                         </Link>
 
                         <nav className="hidden md:flex items-center space-x-8">
-                            <Link
-                                href="/"
-                                className="text-sm text-gray-600 hover:text-black transition-colors"
-                            >
+                            <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
                                 Home
                             </Link>
-                            <Link
-                                href="/search"
-                                className="text-sm text-gray-600 hover:text-black transition-colors"
-                            >
+                            <Link href="/search" className="text-sm text-gray-600 hover:text-black transition-colors">
                                 Explore
                             </Link>
                         </nav>
                     </div>
-
 
                     <div className="flex items-center gap-2">
                         <Link
@@ -40,10 +36,8 @@ export default function Header() {
                             <Search className="w-5 h-5" />
                         </Link>
 
-                        {/* TODO: Add subscription logic */}
-                        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white">
-                            PRO
-                        </div>
+                        {/* Subscription indicator */}
+                        <SubscriptionToggle subscribed={subscribed} />
                     </div>
                 </div>
             </div>
