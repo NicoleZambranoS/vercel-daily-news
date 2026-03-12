@@ -31,19 +31,6 @@ export default function ArticleHeader({ title, category, publishedAt, author }: 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 leading-[1.1] tracking-tight text-gray-900">
                     {title}
                 </h1>
-
-                <div className="flex items-center justify-between">
-                    <p className="text-lg text-gray-600">By <span className="font-medium text-gray-900">{author}</span></p>
-                    <div className="flex items-center space-x-2">
-                        <button className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Bookmark className="w-5 h-5 text-gray-600" />
-                        </button>
-                        <button className="flex items-center space-x-2 px-4 py-2.5 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Share2 className="w-4 h-4 text-gray-600" />
-                            <span className="text-sm font-medium text-gray-700">Share</span>
-                        </button>
-                    </div>
-                </div>
             </div>
         </>
     );
