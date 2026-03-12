@@ -14,7 +14,7 @@ export default function SubscribeCTA() {
                     Subscribe to Vercel Daily Pro for unlimited access to all premium content, early releases, and exclusive insights.
                 </p>
                 <SubmitButton action={subscribe} className="inline-flex items-center gap-2 btn-inverse">
-                    Upgrade to Pro
+                    Subscribe
                 </SubmitButton>
             </div>
         </div>
