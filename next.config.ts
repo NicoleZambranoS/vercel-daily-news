@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "i8qy5y6gxkdgdcv9.public.blob.vercel-storage.com",
       },
+      {
+        hostname: "images.unsplash.com",
+      },
     ],
   },
 };
