@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatDate } from "@/lib/format";
-import { ArrowLeft, Bookmark, Share2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 type ArticleHeaderProps = {
     title: string;
@@ -26,6 +26,8 @@ export default function ArticleHeader({ title, category, publishedAt, author }: 
                     </span>
                     <span className="text-gray-400">•</span>
                     <span className="text-sm text-gray-600">{formatDate(publishedAt)}</span>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-sm text-gray-600">{author}</span>
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 leading-[1.1] tracking-tight text-gray-900">
