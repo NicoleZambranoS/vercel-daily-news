@@ -31,13 +31,6 @@ async function fetchApi<T>(
   }
 }
 
-export async function getFeaturedArticles(): Promise<Article[]> {
-  const articles = await fetchApi<Article[]>("/articles?featured=true", {
-    next: { revalidate: 3600 },
-  });
-  return articles?.data || [];
-}
-
 export async function getBreakingNews(): Promise<BreakingNews | null> {
   const breakingNews = await fetchApi<BreakingNews>(`/breaking-news`, {
     next: { revalidate: 3600 },
@@ -48,14 +41,20 @@ export async function getBreakingNews(): Promise<BreakingNews | null> {
 export async function getArticles({
   searchParams,
 }: {
-  searchParams?: Promise<{ query?: string; category?: string; page?: string }>;
+  searchParams?: Promise<{
+    query?: string;
+    category?: string;
+    page?: string;
+    limit?: string;
+  }>;
 }): Promise<{ articles: Article[]; pagination: PaginationMeta }> {
-  const { query, category, page } = (await searchParams) ?? {};
+  const { query, category, page, limit } = (await searchParams) ?? {};
 
   const params = new URLSearchParams({ limit: "5" });
   if (query) params.set("search", query);
   if (category) params.set("category", category);
   if (page) params.set("page", page);
+  if (limit) params.set("limit", limit);
 
   const result = await fetchApi<Article[]>(`/articles?${params}`, {
     next: { revalidate: 3600 },
@@ -64,12 +63,12 @@ export async function getArticles({
   return {
     articles: result?.data ?? [],
     pagination: result?.meta?.pagination ?? {
-      page: 1,
-      limit: 5,
-      total: 0,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPreviousPage: false,
+      page: result?.meta?.pagination?.page ?? 1,
+      limit: parseInt(limit ?? "5"),
+      total: result?.meta?.pagination?.total ?? 0,
+      totalPages: result?.meta?.pagination?.totalPages ?? 1,
+      hasNextPage: result?.meta?.pagination?.hasNextPage ?? false,
+      hasPreviousPage: result?.meta?.pagination?.hasPreviousPage ?? false,
     },
   };
 }
@@ -81,7 +80,7 @@ export async function getArticleDetails(slug: string): Promise<Article | null> {
   return article?.data || null;
 }
 
-export async function getTrendingNews(exclude: string): Promise<Article[]> {
+export async function getTrendingArticles(exclude: string): Promise<Article[]> {
   const trendingNews = await fetchApi<Article[]>(
     `/articles/trending?exclude=${exclude}`,
     {
