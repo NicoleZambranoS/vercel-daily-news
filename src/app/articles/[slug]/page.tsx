@@ -1,11 +1,11 @@
 import { getArticleDetails } from '@/lib/api';
 import ArticleContent from '@/components/ui/article/article-content';
-import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import TrendingArticles from '@/components/ui/article/trending-articles';
 import ArticleHeader from '@/components/ui/article/article-header';
 import FeaturedImage from '@/components/ui/article/featured-image';
 import SubscribeCTA from '@/components/ui/article/subscribe-cta';
+import TrendingArticlesSkeleton from '@/components/ui/article/trending-articles-skeleton';
 import { isSubscribed } from '@/lib/subscription';
 
 export const generateMetadata = async ({ params }: { params: Promise<{ slug: string }> }) => {
@@ -51,7 +51,7 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
             </div>
 
             {/* Trending Articles*/}
-            <Suspense>
+            <Suspense fallback={<TrendingArticlesSkeleton />}>
                 <TrendingArticles articleId={article!.id} />
             </Suspense>
         </>
