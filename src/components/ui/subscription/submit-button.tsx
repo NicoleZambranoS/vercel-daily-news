@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
 
@@ -21,7 +22,7 @@ function ButtonDetails({ children, className }: ButtonDetailsProps) {
         <button
             type="submit"
             disabled={pending}
-            className={`cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${className ?? ""}`}
+            className={clsx("cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed", className ?? "")}
         >
             {pending && <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />}
             {children}

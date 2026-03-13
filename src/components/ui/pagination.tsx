@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useUpdateSearchParams } from '@/hooks/use-update-search-params';
 
@@ -61,10 +62,10 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
                         <button
                             key={page}
                             onClick={() => goToPage(page)}
-                            className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${page === currentPage
-                                ? 'bg-black text-white'
-                                : 'text-gray-600 hover:text-black hover:bg-gray-100'
-                                }`}
+                            className={clsx("w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors", {
+                                'bg-black text-white': page === currentPage,
+                                'text-gray-600 hover:text-black hover:bg-gray-100': page !== currentPage,
+                            })}
                         >
                             {page}
                         </button>

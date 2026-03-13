@@ -1,5 +1,6 @@
 import { formatDate } from "@/lib/format";
 import { Article } from "@/types/article";
+import clsx from "clsx";
 import { ArrowUpRight, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,15 +11,18 @@ type CardProps = {
 
 export default function Card({ article }: CardProps) {
     const featured = article.featured || false;
-    // const isPremium = true;
 
     return (
         <Link
             href={`/articles/${article.slug}`}
-            className={`group block bg-white rounded-2xl overflow-hidden border border-gray-200/60 hover:border-gray-300 transition-all hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1 ${featured ? 'h-full' : ''
-                }`}
+            className={clsx("group block bg-white rounded-2xl overflow-hidden border border-gray-200/60 hover:border-gray-300 transition-all hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1", {
+                'h-full': featured,
+            })}
         >
-            <div className={`relative ${featured ? 'h-72' : 'h-56'} overflow-hidden bg-linear-to-br from-gray-100 to-gray-200`}>
+            <div className={clsx("relative overflow-hidden bg-linear-to-br from-gray-100 to-gray-200", {
+                'h-72': featured,
+                'h-56': !featured,
+            })}>
                 <Image
                     src={article.image}
                     alt={article.title}
@@ -27,13 +31,6 @@ export default function Card({ article }: CardProps) {
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                {/* {article.isPremium && (
-                    <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md text-gray-900 px-3 py-1.5 rounded-full flex items-center space-x-1.5 text-xs font-medium shadow-lg">
-                        <Lock className="w-3.5 h-3.5" />
-                        <span>Premium</span>
-                    </div>
-                )} */}
 
                 <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                     <div className="p-2 bg-white rounded-full shadow-lg">
@@ -51,8 +48,10 @@ export default function Card({ article }: CardProps) {
                     <span>{formatDate(article.publishedAt)}</span>
                 </div>
 
-                <h3 className={`font-semibold text-gray-900 mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-linear-to-r group-hover:from-blue-600 group-hover:to-purple-600 transition-all leading-snug ${featured ? 'text-2xl' : 'text-xl'
-                    }`}>
+                <h3 className={clsx("font-semibold text-gray-900 mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-linear-to-r group-hover:from-blue-600 group-hover:to-purple-600 transition-all leading-snug", {
+                    'text-2xl': featured,
+                    'text-xl': !featured,
+                })}>
                     {article.title}
                 </h3>
 
