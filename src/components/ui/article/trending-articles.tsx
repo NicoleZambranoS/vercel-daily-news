@@ -7,6 +7,9 @@ type TrendingArticlesProps = {
 }
 export default async function TrendingArticles({ articleId }: TrendingArticlesProps) {
     const trendingArticles = await getTrendingArticles(articleId);
+
+    if (trendingArticles.length === 0) return null;
+
     return (
         <div className="bg-linear-to-b from-gray-50 to-white py-20">
             <div className="site-container">

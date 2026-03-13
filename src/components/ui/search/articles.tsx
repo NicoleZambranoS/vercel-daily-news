@@ -1,5 +1,6 @@
 import { getArticles } from '@/lib/api';
 import EmptyState from './empty-state';
+import ErrorState from './error-state';
 import Card from '../card';
 import Pagination from '@/components/ui/pagination';
 
@@ -10,10 +11,15 @@ type ArticlesProps = {
 }
 
 export default async function Articles({ query, category, page }: ArticlesProps) {
-    // Fetch articles
-    const { articles, pagination } = await getArticles({
-        searchParams: Promise.resolve({ query, category, page }),
-    });
+    let articles, pagination;
+
+    try {
+        ({ articles, pagination } = await getArticles({
+            searchParams: Promise.resolve({ query, category, page }),
+        }));
+    } catch {
+        return <ErrorState />;
+    }
 
     // Empty state
     if (articles.length === 0) {

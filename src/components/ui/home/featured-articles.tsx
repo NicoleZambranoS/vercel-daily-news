@@ -8,6 +8,8 @@ type FeaturedArticlesProps = {
 }
 
 export default function FeaturedArticles({ featuredArticles }: FeaturedArticlesProps) {
+    if (featuredArticles.length === 0) return null;
+
     return (
         <div className="site-container pb-24">
             {/* Featured Section */}
