@@ -1,19 +1,22 @@
-import { getArticleDetails } from '@/lib/api';
+import { getArticleDetails, getSubscriptionStatus } from '@/lib/api';
 import ArticleContent from '@/components/ui/article/article-content';
-import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import TrendingArticles from '@/components/ui/article/trending-articles';
 import ArticleHeader from '@/components/ui/article/article-header';
 import FeaturedImage from '@/components/ui/article/featured-image';
 import SubscribeCTA from '@/components/ui/article/subscribe-cta';
-import { isSubscribed } from '@/lib/subscription';
+import TrendingArticlesSkeleton from '@/components/ui/article/trending-articles-skeleton';
+import { notFound } from 'next/navigation';
 
 export const generateMetadata = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
     const article = await getArticleDetails(slug);
+
+    if (!article) notFound();
+
     return {
-        title: article?.title,
-        description: article?.excerpt,
+        title: article.title,
+        description: article.excerpt,
     };
 };
 
@@ -22,11 +25,9 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
     const slug = params.slug;
 
     // Get article details and subscription status
-    const [article, subscribed] = await Promise.all([getArticleDetails(slug), isSubscribed()]);
+    const [article, subscribed] = await Promise.all([getArticleDetails(slug), getSubscriptionStatus()]);
 
-    if (!article) {
-        notFound();
-    }
+    if (!article) notFound();
 
     return (
         <>
@@ -45,8 +46,9 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
                                 <ArticleContent blocks={article.content.slice(0, 2)} />
                                 <div className="relative mt-16">
                                     <div className="h-32 bg-linear-to-b from-transparent to-white absolute inset-x-0 -top-32 pointer-events-none" />
-                                    <SubscribeCTA />
-                                </div></>
+                                    <SubscribeCTA subscribed={subscribed} />
+                                </div>
+                            </>
                         ) : (
                             <ArticleContent blocks={article.content} />
                         )}
@@ -54,7 +56,7 @@ export default async function ArticleDetailPage(props: { params: Promise<{ slug:
             </div>
 
             {/* Trending Articles*/}
-            <Suspense >
+            <Suspense fallback={<TrendingArticlesSkeleton />}>
                 <TrendingArticles articleId={article.id} />
             </Suspense>
         </>

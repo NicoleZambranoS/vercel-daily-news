@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { isSubscribed } from "@/lib/subscription";
 import SubscriptionToggle from "@/components/ui/subscription/subscription-toggle";
+import { getSubscriptionStatus } from "@/lib/api";
 
 export default async function Header() {
-    const subscribed = await isSubscribed();
+    const subscribed = await getSubscriptionStatus();
 
     return (
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
