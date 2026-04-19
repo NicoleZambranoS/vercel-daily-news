@@ -3,9 +3,11 @@
 import { Search as SearchIcon } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { useUpdateSearchParams } from "@/hooks/use-update-search-params";
+import { useSearchTransition } from "./search-transition-provider";
 
 export default function SearchInput({ placeholder }: { placeholder: string }) {
-  const { searchParams, updateParams } = useUpdateSearchParams();
+  const { startTransition } = useSearchTransition();
+  const { searchParams, updateParams } = useUpdateSearchParams(startTransition);
 
   const handleSearch = useDebouncedCallback((term: string) => {
     updateParams({

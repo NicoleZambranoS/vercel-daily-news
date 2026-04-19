@@ -3,10 +3,14 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import SubscriptionToggle from "@/components/ui/subscription/subscription-toggle";
 import { getSubscriptionStatus } from "@/lib/api";
+import { Suspense } from "react";
 
-export default async function Header() {
+async function SubscriptionStatus() {
   const subscribed = await getSubscriptionStatus();
+  return <SubscriptionToggle subscribed={subscribed} />;
+}
 
+export default function Header() {
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
       <div className="site-container">
@@ -50,7 +54,9 @@ export default async function Header() {
             </Link>
 
             {/* Subscription indicator */}
-            <SubscriptionToggle subscribed={subscribed} />
+            <Suspense>
+              <SubscriptionStatus />
+            </Suspense>
           </div>
         </div>
       </div>

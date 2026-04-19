@@ -1,8 +1,11 @@
 "use client";
 
+import { type TransitionStartFunction } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-export function useUpdateSearchParams() {
+export function useUpdateSearchParams(
+  startTransition?: TransitionStartFunction,
+) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -16,7 +19,15 @@ export function useUpdateSearchParams() {
         params.set(key, value);
       }
     }
-    replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const url = `${pathname}?${params.toString()}`;
+
+    if (startTransition) {
+      startTransition(() => {
+        replace(url, { scroll: false });
+      });
+    } else {
+      replace(url, { scroll: false });
+    }
   };
 
   return { searchParams, updateParams };

@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useUpdateSearchParams } from "@/hooks/use-update-search-params";
+import { useSearchTransition } from "@/components/ui/search/search-transition-provider";
 
 type PaginationProps = {
   currentPage: number;
@@ -19,7 +20,8 @@ export default function Pagination({
   currentPage,
   totalPages,
 }: PaginationProps) {
-  const { updateParams } = useUpdateSearchParams();
+  const { startTransition } = useSearchTransition();
+  const { updateParams } = useUpdateSearchParams(startTransition);
 
   function goToPage(page: number) {
     updateParams({ page: String(page) });
