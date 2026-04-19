@@ -1,11 +1,13 @@
-import { getArticleDetails, getSubscriptionStatus } from "@/lib/api";
+import {
+  getArticleDetails,
+  getSubscriptionStatus,
+  getTrendingArticles,
+} from "@/lib/api";
 import ArticleContent from "@/components/ui/article/article-content";
-import { Suspense } from "react";
 import TrendingArticles from "@/components/ui/article/trending-articles";
 import ArticleHeader from "@/components/ui/article/article-header";
 import FeaturedImage from "@/components/ui/article/featured-image";
 import SubscribeCTA from "@/components/ui/article/subscribe-cta";
-import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
 import { notFound } from "next/navigation";
 
 export const generateMetadata = async ({
@@ -36,9 +38,10 @@ export default async function ArticleDetailPage({
 }) {
   const { slug } = await params;
 
-  const [article, subscribed] = await Promise.all([
+  const [article, subscribed, trendingArticles] = await Promise.all([
     getArticleDetails(slug),
     getSubscriptionStatus(),
+    getTrendingArticles(slug),
   ]);
 
   if (!article) notFound();
@@ -74,9 +77,7 @@ export default async function ArticleDetailPage({
       </div>
 
       {/* Trending Articles */}
-      <Suspense fallback={<TrendingArticlesSkeleton />}>
-        <TrendingArticles articleId={article.id} />
-      </Suspense>
+      <TrendingArticles trendingArticles={trendingArticles} />
     </>
   );
 }

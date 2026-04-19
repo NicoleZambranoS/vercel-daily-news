@@ -3,13 +3,15 @@
 import clsx from "clsx";
 import { Category } from "@/types/categories";
 import { useUpdateSearchParams } from "@/hooks/use-update-search-params";
+import { useSearchTransition } from "./search-transition-provider";
 
 type FiltersProps = {
   categories: Category[];
 };
 
 export default function CategoryFilter({ categories }: FiltersProps) {
-  const { searchParams, updateParams } = useUpdateSearchParams();
+  const { startTransition } = useSearchTransition();
+  const { searchParams, updateParams } = useUpdateSearchParams(startTransition);
 
   const handleCategoryChange = (categoryId: string) => {
     updateParams({

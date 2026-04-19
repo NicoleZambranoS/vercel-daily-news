@@ -1,15 +1,14 @@
 import { TrendingUp } from "lucide-react";
-import { getTrendingArticles } from "@/lib/api";
+import { Article } from "@/types/article";
 import Card from "../card";
 
 type TrendingArticlesProps = {
-  articleId: string;
+  trendingArticles: Article[];
 };
-export default async function TrendingArticles({
-  articleId,
-}: TrendingArticlesProps) {
-  const trendingArticles = await getTrendingArticles(articleId);
 
+export default function TrendingArticles({
+  trendingArticles,
+}: TrendingArticlesProps) {
   if (trendingArticles.length === 0) return null;
 
   return (

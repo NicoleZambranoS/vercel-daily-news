@@ -3,8 +3,6 @@ import "./globals.css";
 import Header from "@/components/header";
 import { geistSans, geistMono } from "@/components/ui/font";
 import { Footer } from "@/components/footer";
-import { Suspense } from "react";
-
 export const metadata: Metadata = {
   title: {
     template: "%s | Vercel Daily News",
@@ -43,13 +41,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.className} ${geistMono.className} antialiased bg-white/95`}
       >
-        <Suspense>
-          <Header />
-        </Suspense>
+        <Header />
         {children}
-        <Suspense>
-          <Footer />
-        </Suspense>
+        <Footer />
       </body>
     </html>
   );
