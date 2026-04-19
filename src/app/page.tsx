@@ -4,9 +4,8 @@ import FeaturedArticles from "@/components/ui/home/featured-articles";
 import HeroSection from "@/components/ui/home/hero-section";
 
 export default async function Home() {
-  // Parallel fetch
-  const [featuredArticles, breakingNews] = await Promise.all([
-    getArticles({ searchParams: Promise.resolve({ limit: "6" }) }),
+  const [{ articles }, breakingNews] = await Promise.all([
+    getArticles({ limit: "6" }),
     getBreakingNews(),
   ]);
 
@@ -19,7 +18,7 @@ export default async function Home() {
       <HeroSection />
 
       {/* Featured Articles Section */}
-      <FeaturedArticles featuredArticles={featuredArticles.articles ?? []} />
+      <FeaturedArticles featuredArticles={articles} />
     </>
   );
 }

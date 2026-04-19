@@ -3,10 +3,15 @@ import Image from "next/image";
 import { ArrowRight, TrendingUp } from "lucide-react";
 import SubmitButton from "../subscription/submit-button";
 import { getSubscriptionStatus } from "@/lib/api";
+import { Suspense } from "react";
 
-export default async function HeroSection() {
+async function HeroSubscribeButton() {
   const subscribed = await getSubscriptionStatus();
+  if (subscribed) return null;
+  return <SubmitButton subscribed={false} className="btn-gradient gap-2" />;
+}
 
+export default function HeroSection() {
   return (
     <div className="relative overflow-hidden">
       <div className="site-container py-16 sm:py-24 relative">
@@ -40,12 +45,9 @@ export default async function HeroSection() {
                 <span>Explore Articles</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              {!subscribed && (
-                <SubmitButton
-                  subscribed={false}
-                  className="btn-gradient gap-2"
-                />
-              )}
+              <Suspense>
+                <HeroSubscribeButton />
+              </Suspense>
             </div>
           </div>
 

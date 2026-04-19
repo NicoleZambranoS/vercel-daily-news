@@ -4,8 +4,10 @@ import { BreakingNews } from "@/types/article";
 type BreakingNewsBannerProps = {
   news: BreakingNews | null;
 };
+
 export default function BreakingNewsBanner({ news }: BreakingNewsBannerProps) {
   if (!news) return null;
+
   return (
     <div className="bg-linear-to-r from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
       {/* Shimmer overlay */}
