@@ -9,6 +9,12 @@ type PaginationProps = {
     totalPages: number;
 }
 
+/**
+ * Pagination component
+ * @param currentPage - The current page number
+ * @param totalPages - The total number of pages
+ * @returns A pagination component
+ */
 export default function Pagination({ currentPage, totalPages }: PaginationProps) {
     const { updateParams } = useUpdateSearchParams();
 

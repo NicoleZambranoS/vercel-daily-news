@@ -1,42 +1,16 @@
-"use server";
-
-import { ApiResponse, PaginationMeta } from "@/types/api";
+import { PaginationMeta } from "@/types/api";
 import { Article, BreakingNews } from "@/types/article";
 import { Category } from "@/types/categories";
+import { fetchApi } from "@/lib/fetch";
+import { cacheLife } from "next/cache";
 import { cookies } from "next/headers";
 
-const BASE_URL = process.env.VERCEL_API_URL!;
-const BYPASS_TOKEN = process.env.VERCEL_PROTECTION_BYPASS!;
-
-const getSubscriptionToken = async (): Promise<string | null> => {
-  const cookieStore = await cookies();
-  return cookieStore.get("subscription-token")?.value ?? null;
-};
-
-async function fetchApi<T>(
-  path: string,
-  options?: RequestInit,
-): Promise<ApiResponse<T>> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      "x-vercel-protection-bypass": BYPASS_TOKEN,
-      ...options?.headers,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
-  }
-
-  return res.json();
-}
-
 export async function getBreakingNews(): Promise<BreakingNews | null> {
+  "use cache";
+  cacheLife({ revalidate: 300 });
+
   try {
-    const breakingNews = await fetchApi<BreakingNews>(`/breaking-news`, {
-      next: { revalidate: 3600 },
-    });
+    const breakingNews = await fetchApi<BreakingNews>(`/breaking-news`);
     return breakingNews.data || null;
   } catch (error) {
     console.error(error);
@@ -44,17 +18,16 @@ export async function getBreakingNews(): Promise<BreakingNews | null> {
   }
 }
 
-export async function getArticles({
-  searchParams,
-}: {
-  searchParams?: Promise<{
-    query?: string;
-    category?: string;
-    page?: string;
-    limit?: string;
-  }>;
+export async function getArticles(searchParams?: {
+  query?: string;
+  category?: string;
+  page?: string;
+  limit?: string;
 }): Promise<{ articles: Article[]; pagination: PaginationMeta }> {
-  const { query, category, page, limit } = (await searchParams) ?? {};
+  "use cache";
+  cacheLife({ revalidate: 1800 });
+
+  const { query, category, page, limit } = searchParams ?? {};
 
   const params = new URLSearchParams({ limit: "5" });
   if (query) params.set("search", query);
@@ -62,9 +35,7 @@ export async function getArticles({
   if (page) params.set("page", page);
   if (limit) params.set("limit", limit);
 
-  const result = await fetchApi<Article[]>(`/articles?${params}`, {
-    next: { revalidate: 3600 },
-  });
+  const result = await fetchApi<Article[]>(`/articles?${params}`);
 
   return {
     articles: result.data ?? [],
@@ -80,10 +51,11 @@ export async function getArticles({
 }
 
 export async function getArticleDetails(slug: string): Promise<Article | null> {
+  "use cache";
+  cacheLife({ revalidate: 86400 });
+
   try {
-    const article = await fetchApi<Article>(`/articles/${slug}`, {
-      next: { revalidate: 3600 },
-    });
+    const article = await fetchApi<Article>(`/articles/${slug}`);
     return article.data || null;
   } catch (error) {
     console.error(error);
@@ -92,12 +64,12 @@ export async function getArticleDetails(slug: string): Promise<Article | null> {
 }
 
 export async function getTrendingArticles(exclude: string): Promise<Article[]> {
+  "use cache";
+  cacheLife({ revalidate: 1800 });
+
   try {
     const trendingNews = await fetchApi<Article[]>(
       `/articles/trending?exclude=${exclude}`,
-      {
-        next: { revalidate: 3600 },
-      },
     );
     return trendingNews.data || [];
   } catch (error) {
@@ -107,10 +79,11 @@ export async function getTrendingArticles(exclude: string): Promise<Article[]> {
 }
 
 export async function getCategories(): Promise<Category[]> {
+  "use cache";
+  cacheLife({ revalidate: 86400 });
+
   try {
-    const categories = await fetchApi<Category[]>("/categories", {
-      next: { revalidate: 3600 },
-    });
+    const categories = await fetchApi<Category[]>("/categories");
     return categories.data || [];
   } catch (error) {
     console.error(error);
@@ -119,25 +92,6 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getSubscriptionStatus(): Promise<boolean> {
-  // get subscription token from cookies
-  const subscriptionToken = await getSubscriptionToken();
-
-  // If no subscription token, return false
-  if (!subscriptionToken) {
-    return false;
-  }
-
-  try {
-    const subscriptionStatus = await fetchApi<boolean>("/subscription", {
-      headers: {
-        "x-subscription-token": subscriptionToken ?? "",
-      },
-      next: { revalidate: 3600 },
-    });
-    return subscriptionStatus.data || false;
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
+  const cookieStore = await cookies();
+  return !!cookieStore.get("subscription-token")?.value;
 }
-
