@@ -1,36 +1,13 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
-import { ApiResponse } from "@/types/api";
+import { fetchApi } from "@/lib/fetch";
 import { Subscription } from "@/types/subscription";
-
-const BASE_URL = process.env.VERCEL_API_URL!;
-const BYPASS_TOKEN = process.env.VERCEL_PROTECTION_BYPASS!;
 
 export type ActionState = {
   success: boolean;
   error?: string;
 } | null;
-
-async function fetchApi<T>(
-  path: string,
-  options?: RequestInit,
-): Promise<ApiResponse<T>> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      "x-vercel-protection-bypass": BYPASS_TOKEN,
-      ...options?.headers,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
-  }
-
-  return res.json();
-}
 
 export async function subscribeAction(): Promise<ActionState> {
   try {
@@ -46,7 +23,6 @@ export async function subscribeAction(): Promise<ActionState> {
       maxAge: 60 * 60 * 24 * 30,
     });
 
-    revalidatePath("/articles/[slug]", "page");
     return { success: true };
   } catch (error) {
     console.error("Subscribe failed:", error);
@@ -69,7 +45,6 @@ export async function unsubscribeAction(): Promise<ActionState> {
     });
 
     cookieStore.delete("subscription-token");
-    revalidatePath("/articles/[slug]", "page");
     return { success: true };
   } catch (error) {
     console.error("Unsubscribe failed:", error);
