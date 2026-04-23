@@ -8,7 +8,7 @@ import { Suspense } from "react";
 async function HeroSubscribeButton() {
   const subscribed = await getSubscriptionStatus();
   if (subscribed) return null;
-  return <SubmitButton subscribed={false} className="btn-gradient gap-2" />;
+  return <SubmitButton className="btn-gradient gap-2" />;
 }
 
 export default function HeroSection() {
@@ -45,7 +45,11 @@ export default function HeroSection() {
                 <span>Explore Articles</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Suspense>
+              <Suspense
+                fallback={
+                  <div className="h-14 w-36 bg-gray-200 rounded-xl animate-pulse" />
+                }
+              >
                 <HeroSubscribeButton />
               </Suspense>
             </div>

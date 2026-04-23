@@ -52,7 +52,7 @@ export async function getArticles(searchParams?: {
 
 export async function getArticleDetails(slug: string): Promise<Article | null> {
   "use cache";
-  cacheLife({ revalidate: 86400 });
+  cacheLife({ revalidate: 3600 });
 
   try {
     const article = await fetchApi<Article>(`/articles/${slug}`);
@@ -80,7 +80,7 @@ export async function getTrendingArticles(exclude: string): Promise<Article[]> {
 
 export async function getCategories(): Promise<Category[]> {
   "use cache";
-  cacheLife({ revalidate: 86400 });
+  cacheLife({ revalidate: 3600 });
 
   try {
     const categories = await fetchApi<Category[]>("/categories");
@@ -93,5 +93,5 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getSubscriptionStatus(): Promise<boolean> {
   const cookieStore = await cookies();
-  return !!cookieStore.get("subscription-token")?.value;
+  return cookieStore.has("subscription-token");
 }

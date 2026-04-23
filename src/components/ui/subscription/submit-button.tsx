@@ -5,12 +5,12 @@ import { useState } from "react";
 import { SubscriptionModal } from "./subscription-modal";
 
 type SubmitButtonProps = {
-  subscribed: boolean;
+  subscribed?: boolean;
   className?: string;
 };
 
 export default function SubmitButton({
-  subscribed,
+  subscribed = false,
   className,
 }: SubmitButtonProps) {
   const [showModal, setShowModal] = useState(false);

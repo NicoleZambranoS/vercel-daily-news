@@ -2,17 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function proxy(request: NextRequest) {
   const hasSubscription = request.cookies.has("subscription-token");
-  const requestHeaders = new Headers(request.headers);
+  const { pathname } = request.nextUrl;
 
-  // Set subscription status header to downstream components
-  requestHeaders.set(
-    "x-subscription-status",
-    hasSubscription ? "active" : "inactive",
-  );
+  if (/^\/articles\/[^/]+$/.test(pathname)) {
+    const url = request.nextUrl.clone();
+    url.searchParams.set("access", hasSubscription ? "full" : "preview");
+    return NextResponse.rewrite(url);
+  }
 
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/articles/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

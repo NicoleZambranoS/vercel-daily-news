@@ -1,12 +1,14 @@
 "use client";
 
+import { subscribeAction, unsubscribeAction } from "@/lib/actions";
 import {
-  subscribeAction,
-  unsubscribeAction,
-  type ActionState,
-} from "@/lib/actions";
+  getToken,
+  getTokenPromise,
+  clearStore,
+} from "@/lib/subscription-store";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
-import { useActionState } from "react";
+import { useState, startTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 
 type SubscriptionModalProps = {
@@ -18,16 +20,50 @@ export function SubscriptionModal({
   onClose,
   subscribed,
 }: SubscriptionModalProps) {
-  const action = subscribed ? unsubscribeAction : subscribeAction;
-  const [state, formAction, isPending] = useActionState<ActionState, FormData>(
-    action,
-    null,
-  );
+  const router = useRouter();
+  const pathname = usePathname();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleSubmit() {
+    setIsLoading(true);
+    setError(null);
+
+    if (subscribed) {
+      const result = await unsubscribeAction();
+      if (!result.success) {
+        setError(result.error ?? "Something went wrong.");
+        setIsLoading(false);
+        return;
+      }
+      clearStore();
+    } else {
+      // Use the pre-fetched token (ready since page load)
+      let token = getToken();
+      if (!token) token = await getTokenPromise();
+
+      if (!token) {
+        setError("Couldn't prepare subscription. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      const result = await subscribeAction(token);
+      if (!result.success) {
+        setError(result.error ?? "Something went wrong.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    onClose();
+    startTransition(() => router.replace(pathname, { scroll: false }));
+  }
 
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
-      onClick={isPending ? undefined : onClose}
+      onClick={isLoading ? undefined : onClose}
     >
       <div
         className="bg-white rounded-3xl max-w-xl w-full p-10 relative animate-in fade-in zoom-in duration-300 shadow-2xl overflow-y-auto max-h-[90vh]"
@@ -35,7 +71,7 @@ export function SubscriptionModal({
       >
         <button
           onClick={onClose}
-          disabled={isPending}
+          disabled={isLoading}
           className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
         >
           <X className="w-5 h-5" />
@@ -75,26 +111,25 @@ export function SubscriptionModal({
           </div>
         </div>
 
-        {state?.error && (
-          <p className="text-sm text-red-600 text-center mb-4">{state.error}</p>
+        {error && (
+          <p className="text-sm text-red-600 text-center mb-4">{error}</p>
         )}
 
-        <form action={formAction}>
-          <button
-            type="submit"
-            disabled={isPending}
-            className="btn-gradient w-full justify-center disabled:opacity-70 disabled:pointer-events-none cursor-pointer"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                <span>{subscribed ? "Unsubscribing…" : "Subscribing…"}</span>
-              </>
-            ) : (
-              <span>{subscribed ? "Unsubscribe" : "Subscribe Now"}</span>
-            )}
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isLoading}
+          className="btn-gradient w-full justify-center disabled:opacity-70 disabled:pointer-events-none cursor-pointer"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <span>{subscribed ? "Unsubscribing…" : "Subscribing…"}</span>
+            </>
+          ) : (
+            <span>{subscribed ? "Unsubscribe" : "Subscribe Now"}</span>
+          )}
+        </button>
       </div>
     </div>,
     document.body,

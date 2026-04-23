@@ -22,13 +22,27 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function SearchPage(props: {
+async function CategoriesSection() {
+  const categories = await getCategories();
+  return <CategoryFilter categories={categories} />;
+}
+
+async function SearchResultsSection(props: {
   searchParams: Promise<{ query?: string; category?: string; page?: string }>;
 }) {
-  const categories = await getCategories();
-  const { query, category, page } = (await props.searchParams) ?? {};
-  const suspenseKey = `${query ?? ""}-${category ?? ""}-${page ?? "1"}`;
+  const { query, category, page } = await props.searchParams;
+  return (
+    <Articles
+      query={query ?? ""}
+      category={category ?? ""}
+      page={page ?? "1"}
+    />
+  );
+}
 
+export default function SearchPage(props: {
+  searchParams: Promise<{ query?: string; category?: string; page?: string }>;
+}) {
   return (
     <div className="min-h-screen bg-linear-to-b from-white via-gray-50 to-white">
       {/* Hero Section */}
@@ -38,26 +52,30 @@ export default async function SearchPage(props: {
         <div className="site-container pb-24">
           {/* Search Input */}
           <div className="max-w-3xl mx-auto text-center">
-            <Suspense>
+            <Suspense
+              fallback={
+                <div className="h-14 w-full bg-gray-100 rounded-xl animate-pulse" />
+              }
+            >
               <SearchInput placeholder="Search articles" />
             </Suspense>
           </div>
           {/* Category Filter */}
           <div className="flex items-center justify-between mb-5 p-6">
             <h3 className="font-semibold text-lg">Filter by Category</h3>
-            <Suspense>
-              <CategoryFilter categories={categories} />
+            <Suspense
+              fallback={
+                <div className="h-10 w-40 bg-gray-100 rounded-lg animate-pulse" />
+              }
+            >
+              <CategoriesSection />
             </Suspense>
           </div>
 
           {/* Articles Section */}
           <ArticlesLoadingWrapper>
-            <Suspense key={suspenseKey} fallback={<ArticlesSkeleton />}>
-              <Articles
-                query={query ?? ""}
-                category={category ?? ""}
-                page={page ?? "1"}
-              />
+            <Suspense fallback={<ArticlesSkeleton />}>
+              <SearchResultsSection searchParams={props.searchParams} />
             </Suspense>
           </ArticlesLoadingWrapper>
         </div>
