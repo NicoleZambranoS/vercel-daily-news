@@ -8,7 +8,7 @@ import {
   startPrefetch,
 } from "@/lib/subscription-store";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
@@ -22,17 +22,8 @@ export function SubscriptionModal({
   subscribed,
 }: SubscriptionModalProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const refreshing = useRef(false);
-
-  useEffect(() => {
-    if (!isPending && refreshing.current) {
-      refreshing.current = false;
-      onClose();
-    }
-  }, [isPending, onClose]);
 
   async function handleSubmit() {
     setIsLoading(true);
@@ -67,8 +58,8 @@ export function SubscriptionModal({
       }
     }
 
-    refreshing.current = true;
-    startTransition(() => router.refresh());
+    onClose();
+    router.refresh();
   }
 
   return createPortal(
