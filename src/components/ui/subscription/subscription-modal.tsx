@@ -5,10 +5,11 @@ import {
   getToken,
   getTokenPromise,
   clearStore,
+  startPrefetch,
 } from "@/lib/subscription-store";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
-import { useState, startTransition } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useState, useTransition, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
 type SubscriptionModalProps = {
@@ -21,9 +22,17 @@ export function SubscriptionModal({
   subscribed,
 }: SubscriptionModalProps) {
   const router = useRouter();
-  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const refreshing = useRef(false);
+
+  useEffect(() => {
+    if (!isPending && refreshing.current) {
+      refreshing.current = false;
+      onClose();
+    }
+  }, [isPending, onClose]);
 
   async function handleSubmit() {
     setIsLoading(true);
@@ -38,10 +47,12 @@ export function SubscriptionModal({
       }
       clearStore();
     } else {
-      // Use the pre-fetched token (ready since page load)
       let token = getToken();
       if (!token) token = await getTokenPromise();
-
+      if (!token) {
+        clearStore();
+        token = await startPrefetch();
+      }
       if (!token) {
         setError("Couldn't prepare subscription. Please try again.");
         setIsLoading(false);
@@ -56,8 +67,8 @@ export function SubscriptionModal({
       }
     }
 
-    onClose();
-    startTransition(() => router.replace(pathname, { scroll: false }));
+    refreshing.current = true;
+    startTransition(() => router.refresh());
   }
 
   return createPortal(
