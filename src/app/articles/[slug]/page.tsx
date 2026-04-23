@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getArticleDetails, getTrendingArticles } from "@/lib/api";
+import { getArticleDetails, getTrendingArticles, getSubscriptionStatus } from "@/lib/api";
 import ArticleContent from "@/components/ui/article/article-content";
 import TrendingArticles from "@/components/ui/article/trending-articles";
 import ArticleHeader from "@/components/ui/article/article-header";
@@ -11,7 +11,6 @@ import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ access?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -57,14 +56,14 @@ async function TrendingSection({ slug }: { slug: string }) {
   return <TrendingArticles trendingArticles={trendingArticles} />;
 }
 
-export default async function ArticleDetailPage({
-  params,
-  searchParams,
-}: Props) {
-  const [{ slug }, { access }] = await Promise.all([params, searchParams]);
-  const subscribed = access === "full";
+export default async function ArticleDetailPage({ params }: Props) {
+  const { slug } = await params;
 
-  const article = await getArticleDetails(slug);
+  // Parallel fetch: article data + subscription status from cookie
+  const [article, subscribed] = await Promise.all([
+    getArticleDetails(slug),
+    getSubscriptionStatus(),
+  ]);
 
   if (!article) notFound();
 

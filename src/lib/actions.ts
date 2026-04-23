@@ -11,10 +11,9 @@ export type ActionState = {
 };
 
 const COOKIE_OPTIONS = {
-  httpOnly: true,
-  sameSite: "lax" as const,
   path: "/",
   maxAge: 60 * 60 * 24 * 30,
+  sameSite: "lax" as const,
 };
 
 /**
@@ -32,9 +31,12 @@ export async function prepareSubscription(): Promise<string | null> {
 }
 
 /**
- * Sets the subscription cookie with a pre-fetched token, instant, no API call.
+ * Sets the subscription cookie. The action response includes a re-rendered
+ * page so the UI updates without a separate router.refresh().
  */
 export async function subscribeAction(token: string): Promise<ActionState> {
+  if (!token) return { success: false, error: "Missing token." };
+
   const cookieStore = await cookies();
   cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
   return { success: true };

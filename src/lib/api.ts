@@ -93,5 +93,5 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getSubscriptionStatus(): Promise<boolean> {
   const cookieStore = await cookies();
-  return cookieStore.has("subscription-token");
+  return !!cookieStore.get("subscription-token")?.value;
 }

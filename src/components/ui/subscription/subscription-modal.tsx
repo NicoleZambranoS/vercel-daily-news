@@ -5,10 +5,10 @@ import {
   getToken,
   getTokenPromise,
   clearStore,
+  startPrefetch,
 } from "@/lib/subscription-store";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
-import { useState, startTransition } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 
 type SubscriptionModalProps = {
@@ -20,8 +20,6 @@ export function SubscriptionModal({
   onClose,
   subscribed,
 }: SubscriptionModalProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,32 +30,34 @@ export function SubscriptionModal({
     if (subscribed) {
       const result = await unsubscribeAction();
       if (!result.success) {
-        setError(result.error ?? "Something went wrong.");
+        setError(result.error ?? "Failed to unsubscribe. Please try again.");
         setIsLoading(false);
         return;
       }
       clearStore();
+      onClose();
     } else {
-      // Use the pre-fetched token (ready since page load)
+      // Use the pre-fetched token if available, otherwise fetch now
       let token = getToken();
       if (!token) token = await getTokenPromise();
-
       if (!token) {
-        setError("Couldn't prepare subscription. Please try again.");
+        clearStore();
+        token = await startPrefetch();
+      }
+      if (!token) {
+        setError("Couldn't subscribe. Please try again.");
         setIsLoading(false);
         return;
       }
 
       const result = await subscribeAction(token);
       if (!result.success) {
-        setError(result.error ?? "Something went wrong.");
+        setError(result.error ?? "Failed to subscribe. Please try again.");
         setIsLoading(false);
         return;
       }
+      onClose();
     }
-
-    onClose();
-    startTransition(() => router.replace(pathname, { scroll: false }));
   }
 
   return createPortal(
