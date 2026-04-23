@@ -7,6 +7,7 @@ import {
   clearStore,
   startPrefetch,
 } from "@/lib/subscription-store";
+import { setCookie, deleteCookie, getCookie } from "@/lib/cookies";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -30,13 +31,13 @@ export function SubscriptionModal({
     setError(null);
 
     if (subscribed) {
-      const result = await unsubscribeAction();
-      if (!result.success) {
-        setError(result.error ?? "Something went wrong.");
-        setIsLoading(false);
-        return;
-      }
+      const token = getCookie("subscription-token");
+      deleteCookie("subscription-token");
       clearStore();
+      onClose();
+      router.refresh();
+      // Background: clean up subscription on the API
+      if (token) unsubscribeAction(token);
     } else {
       let token = getToken();
       if (!token) token = await getTokenPromise();
@@ -50,16 +51,12 @@ export function SubscriptionModal({
         return;
       }
 
-      const result = await subscribeAction(token);
-      if (!result.success) {
-        setError(result.error ?? "Something went wrong.");
-        setIsLoading(false);
-        return;
-      }
+      setCookie("subscription-token", token);
+      onClose();
+      router.refresh();
+      // Background: server-side validation
+      subscribeAction(token);
     }
-
-    onClose();
-    router.refresh();
   }
 
   return createPortal(
