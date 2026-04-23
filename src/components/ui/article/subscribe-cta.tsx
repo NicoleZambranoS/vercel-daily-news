@@ -1,10 +1,6 @@
 import SubmitButton from "@/components/ui/subscription/submit-button";
 
-type SubscribeCTAProps = {
-  subscribed: boolean;
-};
-
-export default function SubscribeCTA({ subscribed }: SubscribeCTAProps) {
+export default function SubscribeCTA() {
   return (
     <div className="relative overflow-hidden bg-linear-to-r from-gray-900 via-black to-gray-900 text-white rounded-3xl p-12 sm:p-16 mb-16">
       <div className="absolute inset-0 bg-linear-to-r from-purple-600/10 via-blue-600/10 to-purple-600/10" />
@@ -16,10 +12,7 @@ export default function SubscribeCTA({ subscribed }: SubscribeCTAProps) {
         <p className="text-gray-300 text-lg mb-8 max-w-xl leading-relaxed">
           Subscribe to Vercel Daily Pro for unlimited access to all content.
         </p>
-        <SubmitButton
-          subscribed={subscribed}
-          className="inline-flex items-center gap-2 btn-inverse"
-        />
+        <SubmitButton className="inline-flex items-center gap-2 btn-inverse" />
       </div>
     </div>
   );

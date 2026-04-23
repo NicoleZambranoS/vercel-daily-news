@@ -5,8 +5,3 @@ export type Subscription = {
   createdAt: string;
   updatedAt: string;
 };
-
-export type SubscriptionResult = {
-  success: boolean;
-  error?: string;
-};

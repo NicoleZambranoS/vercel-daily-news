@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import SubmitButton from "@/components/ui/subscription/submit-button";
+import { startPrefetch } from "@/lib/subscription-store";
 
 type SubscriptionToggleProps = {
   subscribed: boolean;
@@ -9,6 +11,11 @@ type SubscriptionToggleProps = {
 export default function SubscriptionToggle({
   subscribed,
 }: SubscriptionToggleProps) {
+  // Pre-fetch a subscription token in the background for non-subscribers
+  useEffect(() => {
+    if (!subscribed) startPrefetch();
+  }, [subscribed]);
+
   if (subscribed) {
     return (
       <div className="flex items-center gap-2">
@@ -26,9 +33,6 @@ export default function SubscriptionToggle({
   }
 
   return (
-    <SubmitButton
-      subscribed={false}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity"
-    />
+    <SubmitButton className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity" />
   );
 }

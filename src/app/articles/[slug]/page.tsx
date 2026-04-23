@@ -1,24 +1,29 @@
-import {
-  getArticleDetails,
-  getSubscriptionStatus,
-  getTrendingArticles,
-} from "@/lib/api";
+import type { Metadata } from "next";
+import { getArticleDetails, getTrendingArticles } from "@/lib/api";
 import ArticleContent from "@/components/ui/article/article-content";
 import TrendingArticles from "@/components/ui/article/trending-articles";
 import ArticleHeader from "@/components/ui/article/article-header";
 import FeaturedImage from "@/components/ui/article/featured-image";
 import SubscribeCTA from "@/components/ui/article/subscribe-cta";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
 
-export const generateMetadata = async ({
-  params,
-}: {
+type Props = {
   params: Promise<{ slug: string }>;
-}) => {
-  const slug = (await params).slug;
+  searchParams: Promise<{ access?: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
   const article = await getArticleDetails(slug);
 
-  if (!article) notFound();
+  if (!article) {
+    return {
+      title: "Article Not Found",
+      description: "The requested article could not be found.",
+    };
+  }
 
   return {
     title: article.title,
@@ -26,23 +31,40 @@ export const generateMetadata = async ({
     openGraph: {
       title: article.title,
       description: article.excerpt,
-      images: article.image ? [{ url: article.image }] : [],
+      images: [
+        {
+          url: article.image,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+      type: "article",
+      publishedTime: article.publishedAt,
+      authors: [article.author.name],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.excerpt,
+      images: [article.image],
     },
   };
-};
+}
+
+async function TrendingSection({ slug }: { slug: string }) {
+  const trendingArticles = await getTrendingArticles(slug);
+  return <TrendingArticles trendingArticles={trendingArticles} />;
+}
 
 export default async function ArticleDetailPage({
   params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+  searchParams,
+}: Props) {
+  const [{ slug }, { access }] = await Promise.all([params, searchParams]);
+  const subscribed = access === "full";
 
-  const [article, subscribed, trendingArticles] = await Promise.all([
-    getArticleDetails(slug),
-    getSubscriptionStatus(),
-    getTrendingArticles(slug),
-  ]);
+  const article = await getArticleDetails(slug);
 
   if (!article) notFound();
 
@@ -62,22 +84,24 @@ export default async function ArticleDetailPage({
 
         {/* Article Content */}
         <div className="max-w-none mb-16">
-          {!subscribed ? (
+          {subscribed ? (
+            <ArticleContent blocks={article.content} />
+          ) : (
             <>
               <ArticleContent blocks={article.content.slice(0, 2)} />
               <div className="relative mt-16">
                 <div className="h-32 bg-linear-to-b from-transparent to-white absolute inset-x-0 -top-32 pointer-events-none" />
-                <SubscribeCTA subscribed={subscribed} />
+                <SubscribeCTA />
               </div>
             </>
-          ) : (
-            <ArticleContent blocks={article.content} />
           )}
         </div>
       </div>
 
-      {/* Trending Articles */}
-      <TrendingArticles trendingArticles={trendingArticles} />
+      {/* Trending Articles — streams in independently via Suspense */}
+      <Suspense fallback={<TrendingArticlesSkeleton />}>
+        <TrendingSection slug={slug} />
+      </Suspense>
     </>
   );
 }

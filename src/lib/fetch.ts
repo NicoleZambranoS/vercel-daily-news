@@ -1,7 +1,15 @@
 import { ApiResponse } from "@/types/api";
 
-const BASE_URL = process.env.VERCEL_API_URL!;
-const BYPASS_TOKEN = process.env.VERCEL_PROTECTION_BYPASS!;
+function getEnvVar(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
+const BASE_URL = getEnvVar("VERCEL_API_URL");
+const BYPASS_TOKEN = getEnvVar("VERCEL_PROTECTION_BYPASS");
 
 export async function fetchApi<T>(
   path: string,

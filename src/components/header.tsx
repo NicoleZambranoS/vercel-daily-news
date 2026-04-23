@@ -54,7 +54,11 @@ export default function Header() {
             </Link>
 
             {/* Subscription indicator */}
-            <Suspense>
+            <Suspense
+              fallback={
+                <div className="h-7 w-20 bg-gray-100 rounded-full animate-pulse" />
+              }
+            >
               <SubscriptionStatus />
             </Suspense>
           </div>

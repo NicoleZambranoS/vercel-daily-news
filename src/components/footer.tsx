@@ -1,8 +1,6 @@
 import Image from "next/image";
-import { CurrentYear } from "@/components/ui/current-year";
-import { Suspense } from "react";
 
-export function Footer() {
+export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-100 mt-auto">
       <div className="site-container py-12">
@@ -15,11 +13,7 @@ export function Footer() {
               height={28}
             />
             <span className="text-sm text-gray-600">
-              ©{" "}
-              <Suspense fallback="2026">
-                <CurrentYear />
-              </Suspense>{" "}
-              Vercel Daily. All rights reserved.
+              © 2026 Vercel Daily. All rights reserved.
             </span>
           </div>
         </div>
