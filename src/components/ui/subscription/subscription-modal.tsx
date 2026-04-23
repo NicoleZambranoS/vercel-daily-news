@@ -7,10 +7,8 @@ import {
   clearStore,
   startPrefetch,
 } from "@/lib/subscription-store";
-import { setCookie, deleteCookie, getCookie } from "@/lib/cookies";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
 type SubscriptionModalProps = {
@@ -22,7 +20,6 @@ export function SubscriptionModal({
   onClose,
   subscribed,
 }: SubscriptionModalProps) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,14 +28,16 @@ export function SubscriptionModal({
     setError(null);
 
     if (subscribed) {
-      const token = getCookie("subscription-token");
-      deleteCookie("subscription-token");
+      const result = await unsubscribeAction();
+      if (!result.success) {
+        setError(result.error ?? "Failed to unsubscribe. Please try again.");
+        setIsLoading(false);
+        return;
+      }
       clearStore();
       onClose();
-      router.refresh();
-      // Background: clean up subscription on the API
-      if (token) unsubscribeAction(token);
     } else {
+      // Use the pre-fetched token if available, otherwise fetch now
       let token = getToken();
       if (!token) token = await getTokenPromise();
       if (!token) {
@@ -46,16 +45,18 @@ export function SubscriptionModal({
         token = await startPrefetch();
       }
       if (!token) {
-        setError("Couldn't prepare subscription. Please try again.");
+        setError("Couldn't subscribe. Please try again.");
         setIsLoading(false);
         return;
       }
 
-      setCookie("subscription-token", token);
+      const result = await subscribeAction(token);
+      if (!result.success) {
+        setError(result.error ?? "Failed to subscribe. Please try again.");
+        setIsLoading(false);
+        return;
+      }
       onClose();
-      router.refresh();
-      // Background: server-side validation
-      subscribeAction(token);
     }
   }
 

@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { after } from "next/server";
 import { fetchApi } from "@/lib/fetch";
 import { Subscription } from "@/types/subscription";
@@ -7,6 +8,12 @@ import { Subscription } from "@/types/subscription";
 export type ActionState = {
   success: boolean;
   error?: string;
+};
+
+const COOKIE_OPTIONS = {
+  path: "/",
+  maxAge: 60 * 60 * 24 * 30,
+  sameSite: "lax" as const,
 };
 
 /**
@@ -24,18 +31,29 @@ export async function prepareSubscription(): Promise<string | null> {
 }
 
 /**
- * Validates a subscription token.
+ * Sets the subscription cookie. The action response includes a re-rendered
+ * page so the UI updates without a separate router.refresh().
  */
 export async function subscribeAction(token: string): Promise<ActionState> {
   if (!token) return { success: false, error: "Missing token." };
+
+  const cookieStore = await cookies();
+  cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
   return { success: true };
 }
 
 /**
- * Cleans up the subscription on the API in the background.
+ * Deletes the subscription cookie and cleans up via the API in the background.
  */
-export async function unsubscribeAction(token: string): Promise<ActionState> {
-  if (!token) return { success: false, error: "Missing token." };
+export async function unsubscribeAction(): Promise<ActionState> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("subscription-token")?.value;
+
+  if (!token) {
+    return { success: false, error: "No active subscription found." };
+  }
+
+  cookieStore.delete("subscription-token");
 
   after(async () => {
     try {
