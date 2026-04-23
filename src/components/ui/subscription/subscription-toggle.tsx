@@ -16,23 +16,21 @@ export default function SubscriptionToggle({
     if (!subscribed) startPrefetch();
   }, [subscribed]);
 
-  if (subscribed) {
-    return (
-      <div className="flex items-center gap-2">
-        {/* Subscribed badge */}
+  return (
+    <div className="flex items-center gap-2">
+      {subscribed && (
         <span className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white">
           Subscribed
         </span>
-        {/* Unsubscribe button */}
-        <SubmitButton
-          subscribed={subscribed}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black transition-colors"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <SubmitButton className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity" />
+      )}
+      <SubmitButton
+        subscribed={subscribed}
+        className={
+          subscribed
+            ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black transition-colors"
+            : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity"
+        }
+      />
+    </div>
   );
 }
