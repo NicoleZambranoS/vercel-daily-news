@@ -13,7 +13,7 @@ export default function Footer() {
               height={28}
             />
             <span className="text-sm text-gray-600">
-              © {new Date().getFullYear()} Vercel Daily. All rights reserved.
+              © 2026 Vercel Daily. All rights reserved.
             </span>
           </div>
         </div>
