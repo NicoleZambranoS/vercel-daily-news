@@ -5,13 +5,13 @@ import TrendingArticles from "@/components/ui/article/trending-articles";
 import ArticleHeader from "@/components/ui/article/article-header";
 import FeaturedImage from "@/components/ui/article/featured-image";
 import SubscribeCTA from "@/components/ui/article/subscribe-cta";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ access?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -57,16 +57,17 @@ async function TrendingSection({ slug }: { slug: string }) {
   return <TrendingArticles trendingArticles={trendingArticles} />;
 }
 
-export default async function ArticleDetailPage({
-  params,
-  searchParams,
-}: Props) {
-  const [{ slug }, { access }] = await Promise.all([params, searchParams]);
+export default async function ArticleDetailPage({ params }: Props) {
+  const { slug } = await params;
 
-  const article = await getArticleDetails(slug);
+  const [article, headersList] = await Promise.all([
+    getArticleDetails(slug),
+    headers(),
+  ]);
+
   if (!article) notFound();
 
-  const subscribed = access === "full";
+  const subscribed = headersList.get("x-subscription-access") === "full";
 
   return (
     <>

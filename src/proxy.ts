@@ -1,20 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const hasSubscription = request.cookies.has("subscription-token");
 
-  if (pathname.startsWith("/articles/")) {
-    const hasSubscription = request.cookies.has("subscription-token");
-    const url = request.nextUrl.clone();
-    url.searchParams.set("access", hasSubscription ? "full" : "preview");
+  // Pass access level to downstream pages via request header.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(
+    "x-subscription-access",
+    hasSubscription ? "full" : "preview",
+  );
 
-    const response = NextResponse.rewrite(url);
-    response.headers.set("X-Frame-Options", "DENY");
-    response.headers.set("X-Content-Type-Options", "nosniff");
-    return response;
-  }
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
-  const response = NextResponse.next();
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   return response;
