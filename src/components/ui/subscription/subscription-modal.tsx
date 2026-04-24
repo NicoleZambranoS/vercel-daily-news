@@ -4,7 +4,7 @@ import { subscribeAction, unsubscribeAction } from "@/lib/actions";
 import { getToken, reset } from "@/lib/subscription-store";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 
 type SubscriptionModalProps = {
@@ -19,18 +19,17 @@ export function SubscriptionModal({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const shouldClose = useRef(false);
 
-  // Close only after the transition has fully committed to the DOM.
+  // Close once the page refresh has committed to the DOM.
   useEffect(() => {
-    if (shouldClose.current && !isPending) {
+    if (isRefreshing && !isPending) {
       onClose();
     }
-  }, [isPending, onClose]);
+  }, [isRefreshing, isPending, onClose]);
 
-  // Spinner stays on during both the server action AND the transition.
-  const isSubmitting = isLoading || isPending;
+  const isSubmitting = isLoading || isRefreshing || isPending;
 
   async function handleSubmit() {
     setIsLoading(true);
@@ -46,8 +45,6 @@ export function SubscriptionModal({
         reset();
       } else {
         let token = await getToken();
-
-        // Retry if the token is not available
         if (!token) {
           reset();
           token = await getToken();
@@ -57,7 +54,6 @@ export function SubscriptionModal({
           return;
         }
 
-        // Token is available, subscribe (set cookie)
         const result = await subscribeAction(token);
         if (!result.success) {
           setError(result.error ?? "Failed to subscribe. Please try again.");
@@ -65,10 +61,7 @@ export function SubscriptionModal({
         }
       }
 
-      // Trigger the transition so isPending tracks completion.
-      // The modal stays open with a spinner until the new tree is committed,
-      // then the effect above fires onClose().
-      shouldClose.current = true;
+      setIsRefreshing(true);
       startTransition(() => {
         router.refresh();
       });
