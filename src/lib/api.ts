@@ -58,8 +58,8 @@ export async function getArticleDetails(slug: string): Promise<Article | null> {
     const article = await fetchApi<Article>(`/articles/${slug}`);
     return article.data || null;
   } catch (error) {
-    console.error(error);
-    return null;
+    if (error instanceof Error && error.message.includes("404")) return null;
+    throw error;
   }
 }
 

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { getArticleDetails, getTrendingArticles, getSubscriptionStatus } from "@/lib/api";
+import { getArticleDetails, getTrendingArticles } from "@/lib/api";
 import ArticleContent from "@/components/ui/article/article-content";
 import TrendingArticles from "@/components/ui/article/trending-articles";
 import ArticleHeader from "@/components/ui/article/article-header";
 import FeaturedImage from "@/components/ui/article/featured-image";
 import SubscribeCTA from "@/components/ui/article/subscribe-cta";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
@@ -59,13 +60,14 @@ async function TrendingSection({ slug }: { slug: string }) {
 export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;
 
-  // Parallel fetch: article data + subscription status from cookie
-  const [article, subscribed] = await Promise.all([
+  const [article, headersList] = await Promise.all([
     getArticleDetails(slug),
-    getSubscriptionStatus(),
+    headers(),
   ]);
 
   if (!article) notFound();
+
+  const subscribed = headersList.get("x-subscription-access") === "full";
 
   return (
     <>

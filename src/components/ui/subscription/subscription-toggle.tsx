@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import SubmitButton from "@/components/ui/subscription/submit-button";
-import { startPrefetch } from "@/lib/subscription-store";
+import { prefetch } from "@/lib/subscription-store";
 
 type SubscriptionToggleProps = {
   subscribed: boolean;
@@ -11,9 +11,8 @@ type SubscriptionToggleProps = {
 export default function SubscriptionToggle({
   subscribed,
 }: SubscriptionToggleProps) {
-  // Pre-fetch a subscription token in the background for non-subscribers
   useEffect(() => {
-    if (!subscribed) startPrefetch();
+    if (!subscribed) prefetch();
   }, [subscribed]);
 
   return (

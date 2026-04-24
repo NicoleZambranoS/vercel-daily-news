@@ -1,4 +1,5 @@
 import { ApiResponse } from "@/types/api";
+import { ApiError } from "next/dist/server/api-utils";
 
 function getEnvVar(name: string): string {
   const value = process.env[name];
@@ -24,7 +25,7 @@ export async function fetchApi<T>(
   });
 
   if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
+    throw new ApiError(res.status, res.statusText);
   }
 
   return res.json();

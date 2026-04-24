@@ -1,33 +1,18 @@
 import { prepareSubscription } from "@/lib/actions";
 
-let prefetchedToken: string | null = null;
-let prefetchPromise: Promise<string | null> | null = null;
+let inflight: Promise<string | null> | null = null;
 
-export function startPrefetch() {
-  if (prefetchPromise) return prefetchPromise;
-
-  prefetchPromise = prepareSubscription()
-    .then((token) => {
-      prefetchedToken = token;
-      return token;
-    })
-    .catch(() => {
-      prefetchedToken = null;
-      return null;
-    });
-
-  return prefetchPromise;
+export function prefetch(): void {
+  if (!inflight) {
+    inflight = prepareSubscription().catch(() => null);
+  }
 }
 
-export function getToken(): string | null {
-  return prefetchedToken;
+export async function getToken(): Promise<string | null> {
+  prefetch();
+  return inflight!;
 }
 
-export function getTokenPromise(): Promise<string | null> {
-  return prefetchPromise ?? Promise.resolve(null);
-}
-
-export function clearStore() {
-  prefetchedToken = null;
-  prefetchPromise = null;
+export function reset(): void {
+  inflight = null;
 }
