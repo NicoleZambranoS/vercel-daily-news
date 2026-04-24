@@ -16,9 +16,6 @@ const COOKIE_OPTIONS = {
   sameSite: "lax" as const,
 };
 
-/**
- * Pre-creates a subscription via the API and returns the token.
- */
 export async function prepareSubscription(): Promise<string | null> {
   try {
     const subscription = await fetchApi<Subscription>("/subscription/create", {
@@ -30,10 +27,6 @@ export async function prepareSubscription(): Promise<string | null> {
   }
 }
 
-/**
- * Sets the subscription cookie. The action response includes a re-rendered
- * page so the UI updates without a separate router.refresh().
- */
 export async function subscribeAction(token: string): Promise<ActionState> {
   if (!token) return { success: false, error: "Missing token." };
 
@@ -42,9 +35,6 @@ export async function subscribeAction(token: string): Promise<ActionState> {
   return { success: true };
 }
 
-/**
- * Deletes the subscription cookie and cleans up via the API in the background.
- */
 export async function unsubscribeAction(): Promise<ActionState> {
   const cookieStore = await cookies();
   const token = cookieStore.get("subscription-token")?.value;

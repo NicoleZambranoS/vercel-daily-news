@@ -1,16 +1,13 @@
-import { ApiResponse } from "@/types/api";
-import { ApiError } from "next/dist/server/api-utils";
+import type { ApiResponse } from "@/types/api";
 
-function getEnvVar(name: string): string {
+function requireEnv(name: string): string {
   const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
+  if (!value) throw new Error(`Missing environment variable: ${name}`);
   return value;
 }
 
-const BASE_URL = getEnvVar("VERCEL_API_URL");
-const BYPASS_TOKEN = getEnvVar("VERCEL_PROTECTION_BYPASS");
+const BASE_URL = requireEnv("VERCEL_API_URL");
+const BYPASS_TOKEN = requireEnv("VERCEL_PROTECTION_BYPASS");
 
 export async function fetchApi<T>(
   path: string,
@@ -25,7 +22,7 @@ export async function fetchApi<T>(
   });
 
   if (!res.ok) {
-    throw new ApiError(res.status, res.statusText);
+    throw new Error(`${res.status}`);
   }
 
   return res.json();
