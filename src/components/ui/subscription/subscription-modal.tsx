@@ -1,13 +1,9 @@
 "use client";
 
 import { subscribeAction, unsubscribeAction } from "@/lib/actions";
-import {
-  getToken,
-  getTokenPromise,
-  clearStore,
-  startPrefetch,
-} from "@/lib/subscription-store";
+import { getToken, reset } from "@/lib/subscription-store";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -20,6 +16,7 @@ export function SubscriptionModal({
   onClose,
   subscribed,
 }: SubscriptionModalProps) {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,36 +24,38 @@ export function SubscriptionModal({
     setIsLoading(true);
     setError(null);
 
-    if (subscribed) {
-      const result = await unsubscribeAction();
-      if (!result.success) {
-        setError(result.error ?? "Failed to unsubscribe. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-      clearStore();
-      onClose();
-    } else {
-      // Use the pre-fetched token if available, otherwise fetch now
-      let token = getToken();
-      if (!token) token = await getTokenPromise();
-      if (!token) {
-        clearStore();
-        token = await startPrefetch();
-      }
-      if (!token) {
-        setError("Couldn't subscribe. Please try again.");
-        setIsLoading(false);
-        return;
+    try {
+      if (subscribed) {
+        const result = await unsubscribeAction();
+        if (!result.success) {
+          setError(result.error ?? "Failed to unsubscribe. Please try again.");
+          return;
+        }
+        reset();
+      } else {
+        let token = await getToken();
+        if (!token) {
+          reset();
+          token = await getToken();
+        }
+        if (!token) {
+          setError("Couldn't subscribe. Please try again.");
+          return;
+        }
+
+        const result = await subscribeAction(token);
+        if (!result.success) {
+          setError(result.error ?? "Failed to subscribe. Please try again.");
+          return;
+        }
       }
 
-      const result = await subscribeAction(token);
-      if (!result.success) {
-        setError(result.error ?? "Failed to subscribe. Please try again.");
-        setIsLoading(false);
-        return;
-      }
+      router.refresh();
       onClose();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
