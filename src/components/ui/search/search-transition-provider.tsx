@@ -36,10 +36,6 @@ export function useSearchTransition() {
   return useContext(SearchTransitionContext);
 }
 
-/**
- * Shows a skeleton overlay while a search transition is pending,
- * keeping the Suspense boundary mounted for React to process.
- */
 export function ArticlesLoadingWrapper({ children }: { children: ReactNode }) {
   const { isPending } = useSearchTransition();
   return (
