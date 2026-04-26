@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { subscribeAction, unsubscribeAction } from "@/lib/actions";
 import { getToken, reset } from "@/lib/subscription-store";
 import { SubscriptionModal } from "./subscription-modal";
@@ -18,6 +19,7 @@ export default function SubmitButton({
   const [showModal, setShowModal] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   function handleAction() {
     startTransition(async () => {
@@ -46,6 +48,7 @@ export default function SubmitButton({
         }
       }
 
+      router.refresh();
       setShowModal(false);
     });
   }
