@@ -17,7 +17,7 @@ export default function SubmitButton({
   className,
 }: SubmitButtonProps) {
   const [showModal, setShowModal] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -27,6 +27,7 @@ export default function SubmitButton({
     setError(null);
 
     try {
+      // Step 1 — run the server action (sets/deletes the cookie).
       if (subscribed) {
         const result = await unsubscribeAction();
         if (!result.success) {
@@ -52,9 +53,11 @@ export default function SubmitButton({
         }
       }
 
+      setShowModal(false);
+
+      // Refresh the RSC in its own isolated transition.
       startTransition(() => {
         router.refresh();
-        setShowModal(false);
       });
     } catch (error) {
       console.error(error);
@@ -79,7 +82,7 @@ export default function SubmitButton({
         <SubscriptionModal
           onClose={() => setShowModal(false)}
           onAction={handleAction}
-          isPending={isLoading || isPending}
+          isPending={isLoading}
           error={error}
           subscribed={subscribed}
         />

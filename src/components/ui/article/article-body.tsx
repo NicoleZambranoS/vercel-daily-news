@@ -1,4 +1,5 @@
 import type { ContentBlock } from "@/types/article";
+import { connection } from "next/server";
 import { headers } from "next/headers";
 import ArticleContent from "./article-content";
 import SubscribeCTA from "./subscribe-cta";
@@ -8,6 +9,7 @@ type ArticleBodyProps = {
 };
 
 export default async function ArticleBody({ content }: ArticleBodyProps) {
+  await connection();
   const headersList = await headers();
   const subscribed = headersList.get("x-subscription-access") === "full";
 
