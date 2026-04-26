@@ -71,7 +71,7 @@ export default async function ArticleDetailPage({ params }: Props) {
         <FeaturedImage src={article.image} alt={article.title} />
 
         <Suspense fallback={<ArticleBodySkeleton />}>
-          <ArticleBody slug={slug} />
+          <ArticleBody article={article} />
         </Suspense>
       </div>
 

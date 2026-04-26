@@ -1,21 +1,14 @@
-import { getArticleDetails } from "@/lib/api";
+import type { Article } from "@/types/article";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
 import ArticleContent from "./article-content";
 import SubscribeCTA from "./subscribe-cta";
 
 type ArticleBodyProps = {
-  slug: string;
+  article: Article;
 };
 
-export default async function ArticleBody({ slug }: ArticleBodyProps) {
-  const [article, headersList] = await Promise.all([
-    getArticleDetails(slug),
-    headers(),
-  ]);
-
-  if (!article) notFound();
-
+export default async function ArticleBody({ article }: ArticleBodyProps) {
+  const headersList = await headers();
   const subscribed = headersList.get("x-subscription-access") === "full";
 
   return (
