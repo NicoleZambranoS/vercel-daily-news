@@ -18,11 +18,15 @@ export default function SubmitButton({
 }: SubmitButtonProps) {
   const [showModal, setShowModal] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  function handleAction() {
-    startTransition(async () => {
+  async function handleAction() {
+    setIsLoading(true);
+    setError(null);
+
+    try {
       if (subscribed) {
         const result = await unsubscribeAction();
         if (!result.success) {
@@ -48,9 +52,16 @@ export default function SubmitButton({
         }
       }
 
-      router.refresh();
-      setShowModal(false);
-    });
+      startTransition(() => {
+        router.refresh();
+        setShowModal(false);
+      });
+    } catch (error) {
+      console.error(error);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -68,7 +79,7 @@ export default function SubmitButton({
         <SubscriptionModal
           onClose={() => setShowModal(false)}
           onAction={handleAction}
-          isPending={isPending}
+          isPending={isLoading || isPending}
           error={error}
           subscribed={subscribed}
         />
