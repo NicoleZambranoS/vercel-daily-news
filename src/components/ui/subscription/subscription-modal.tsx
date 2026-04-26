@@ -1,74 +1,27 @@
 "use client";
 
-import { subscribeAction, unsubscribeAction } from "@/lib/actions";
-import { getToken, reset } from "@/lib/subscription-store";
 import { X, Sparkles, Check, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { createPortal } from "react-dom";
 
 type SubscriptionModalProps = {
   onClose: () => void;
+  onAction: () => void;
+  isPending: boolean;
+  error: string | null;
   subscribed: boolean;
 };
 
 export function SubscriptionModal({
   onClose,
+  onAction,
+  isPending,
+  error,
   subscribed,
 }: SubscriptionModalProps) {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  async function handleSubmit() {
-    setIsLoading(true);
-    setError(null);
-    let succeeded = false;
-
-    try {
-      if (subscribed) {
-        const result = await unsubscribeAction();
-        if (!result.success) {
-          setError(result.error ?? "Failed to unsubscribe. Please try again.");
-          return;
-        }
-        reset();
-      } else {
-        let token = await getToken();
-        if (!token) {
-          reset();
-          token = await getToken();
-        }
-        if (!token) {
-          setError("Couldn't subscribe. Please try again.");
-          return;
-        }
-
-        const result = await subscribeAction(token);
-        if (!result.success) {
-          setError(result.error ?? "Failed to subscribe. Please try again.");
-          return;
-        }
-      }
-
-      succeeded = true;
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-
-    // Trigger RSC refresh and close after the action has completed.
-    if (succeeded) {
-      router.refresh();
-      onClose();
-    }
-  }
-
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
-      onClick={isLoading ? undefined : onClose}
+      onClick={isPending ? undefined : onClose}
     >
       <div
         className="bg-white rounded-3xl max-w-xl w-full p-10 relative animate-in fade-in zoom-in duration-300 shadow-2xl overflow-y-auto max-h-[90vh]"
@@ -76,7 +29,7 @@ export function SubscriptionModal({
       >
         <button
           onClick={onClose}
-          disabled={isLoading}
+          disabled={isPending}
           className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
         >
           <X className="w-5 h-5" />
@@ -116,17 +69,17 @@ export function SubscriptionModal({
           </div>
         </div>
 
-        {error && (
+        {!isPending && error && (
           <p className="text-sm text-red-600 text-center mb-4">{error}</p>
         )}
 
         <button
           type="button"
-          onClick={handleSubmit}
-          disabled={isLoading}
+          onClick={onAction}
+          disabled={isPending}
           className="btn-gradient w-full justify-center disabled:opacity-70 disabled:pointer-events-none cursor-pointer"
         >
-          {isLoading ? (
+          {isPending ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
               <span>{subscribed ? "Unsubscribing…" : "Subscribing…"}</span>
