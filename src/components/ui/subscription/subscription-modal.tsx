@@ -64,8 +64,8 @@ export function SubscriptionModal({
         }
       }
 
-      setIsRefreshing(true);
       startTransition(() => {
+        setIsRefreshing(true);
         router.refresh();
       });
     } catch {
