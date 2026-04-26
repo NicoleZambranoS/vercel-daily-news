@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { getArticleDetails, getTrendingArticles } from "@/lib/api";
-import ArticleContent from "@/components/ui/article/article-content";
-import TrendingArticles from "@/components/ui/article/trending-articles";
 import ArticleHeader from "@/components/ui/article/article-header";
+import ArticleBody from "@/components/ui/article/article-body";
+import ArticleBodySkeleton from "@/components/ui/article/article-body-skeleton";
 import FeaturedImage from "@/components/ui/article/featured-image";
-import SubscribeCTA from "@/components/ui/article/subscribe-cta";
-import { headers } from "next/headers";
+import TrendingArticles from "@/components/ui/article/trending-articles";
+import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -32,12 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: article.title,
       description: article.excerpt,
       images: [
-        {
-          url: article.image,
-          width: 1200,
-          height: 630,
-          alt: article.title,
-        },
+        { url: article.image, width: 1200, height: 630, alt: article.title },
       ],
       type: "article",
       publishedTime: article.publishedAt,
@@ -53,21 +47,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function TrendingSection({ slug }: { slug: string }) {
-  const trendingArticles = await getTrendingArticles(slug);
-  return <TrendingArticles trendingArticles={trendingArticles} />;
+  const articles = await getTrendingArticles(slug);
+  return <TrendingArticles trendingArticles={articles} />;
 }
 
 export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;
-
-  const [article, headersList] = await Promise.all([
-    getArticleDetails(slug),
-    headers(),
-  ]);
-
+  const article = await getArticleDetails(slug);
   if (!article) notFound();
-
-  const subscribed = headersList.get("x-subscription-access") === "full";
 
   return (
     <>
@@ -83,23 +70,12 @@ export default async function ArticleDetailPage({ params }: Props) {
         {/* Featured Image */}
         <FeaturedImage src={article.image} alt={article.title} />
 
-        {/* Article Content */}
-        <div className="max-w-none mb-16">
-          {subscribed ? (
-            <ArticleContent blocks={article.content} />
-          ) : (
-            <>
-              <ArticleContent blocks={article.content.slice(0, 2)} />
-              <div className="relative mt-16">
-                <div className="h-32 bg-linear-to-b from-transparent to-white absolute inset-x-0 -top-32 pointer-events-none" />
-                <SubscribeCTA />
-              </div>
-            </>
-          )}
-        </div>
+        <Suspense fallback={<ArticleBodySkeleton />}>
+          <ArticleBody slug={slug} />
+        </Suspense>
       </div>
 
-      {/* Trending Articles — streams in independently via Suspense */}
+      {/* Trending Articles */}
       <Suspense fallback={<TrendingArticlesSkeleton />}>
         <TrendingSection slug={slug} />
       </Suspense>
