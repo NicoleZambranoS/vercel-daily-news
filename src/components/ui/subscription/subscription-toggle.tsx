@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useTransition } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { prefetch, getToken, reset } from "@/lib/subscription-store";
 import { subscribeAction, unsubscribeAction } from "@/lib/actions";
 
@@ -13,7 +13,6 @@ export default function SubscriptionToggle({
   subscribed,
 }: SubscriptionToggleProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -30,7 +29,7 @@ export default function SubscriptionToggle({
         if (!token) return;
         await subscribeAction(token);
       }
-      router.replace(pathname);
+      router.refresh();
     });
   }
 
