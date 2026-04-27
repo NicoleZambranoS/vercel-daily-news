@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { prefetch, getToken, reset } from "@/lib/subscription-store";
 import { subscribeAction, unsubscribeAction } from "@/lib/actions";
 
@@ -13,7 +13,7 @@ export default function SubscriptionToggle({
   subscribed,
 }: SubscriptionToggleProps) {
   const [isPending, setIsPending] = useState(false);
-  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     if (!subscribed) prefetch();
@@ -23,7 +23,7 @@ export default function SubscriptionToggle({
     setIsPending(true);
     try {
       if (subscribed) {
-        await unsubscribeAction(pathname);
+        await unsubscribeAction();
       } else {
         const token = await getToken();
         if (!token) {
@@ -31,8 +31,9 @@ export default function SubscriptionToggle({
           return;
         }
         reset();
-        await subscribeAction(token, pathname);
+        await subscribeAction(token);
       }
+      router.refresh();
     } catch {
       setIsPending(false);
     }

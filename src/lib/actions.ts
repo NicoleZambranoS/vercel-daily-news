@@ -2,7 +2,6 @@
 
 import { cookies } from "next/headers";
 import { after } from "next/server";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { fetchApi } from "@/lib/fetch";
 import type { Subscription } from "@/types/subscription";
@@ -31,17 +30,13 @@ export async function prepareSubscription(): Promise<string | null> {
   }
 }
 
-export async function subscribeAction(
-  token: string,
-  pathname: string,
-): Promise<never> {
+export async function subscribeAction(token: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
-  revalidatePath(pathname);
-  redirect(pathname);
+  revalidatePath("/", "layout");
 }
 
-export async function unsubscribeAction(pathname: string): Promise<never> {
+export async function unsubscribeAction(): Promise<void> {
   const cookieStore = await cookies();
   const token = cookieStore.get("subscription-token")?.value;
 
@@ -60,6 +55,5 @@ export async function unsubscribeAction(pathname: string): Promise<never> {
     });
   }
 
-  revalidatePath(pathname);
-  redirect(pathname);
+  revalidatePath("/", "layout");
 }
