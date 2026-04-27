@@ -1,16 +1,10 @@
 "use client";
 
 import clsx from "clsx";
-import { useSyncExternalStore } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { subscribeAction, unsubscribeAction } from "@/lib/actions";
-import {
-  getToken,
-  reset,
-  getPending,
-  setPending,
-  subscribePending,
-} from "@/lib/subscription-store";
+import { getToken, reset } from "@/lib/subscription-store";
 
 type SubmitButtonProps = {
   subscribed?: boolean;
@@ -22,13 +16,10 @@ export default function SubmitButton({
   className,
 }: SubmitButtonProps) {
   const router = useRouter();
-  const isPending = useSyncExternalStore(subscribePending, getPending, () => false);
+  const [isPending, startTransition] = useTransition();
 
-  async function handleClick() {
-    if (isPending) return;
-    setPending(true);
-
-    try {
+  function handleClick() {
+    startTransition(async () => {
       if (subscribed) {
         await unsubscribeAction();
         reset();
@@ -38,18 +29,13 @@ export default function SubmitButton({
           reset();
           token = await getToken();
         }
-        if (!token) {
-          setPending(false);
-          return;
-        }
+        if (!token) return;
 
         await subscribeAction(token);
       }
 
       router.refresh();
-    } finally {
-      setPending(false);
-    }
+    });
   }
 
   return (
