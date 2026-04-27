@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import {
-  getArticleDetails,
-  getSubscriptionStatus,
-  getTrendingArticles,
-} from "@/lib/api";
+import { getArticleDetails, getTrendingArticles } from "@/lib/api";
 import ArticleHeader from "@/components/ui/article/article-header";
-import ArticleContent from "@/components/ui/article/article-content";
-import SubscribeCTA from "@/components/ui/article/subscribe-cta";
+import Paywall from "@/components/ui/article/paywall";
+import ArticleBodySkeleton from "@/components/ui/article/article-body-skeleton";
 import FeaturedImage from "@/components/ui/article/featured-image";
 import TrendingArticles from "@/components/ui/article/trending-articles";
 import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
@@ -57,11 +53,7 @@ async function TrendingSection({ slug }: { slug: string }) {
 
 export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;
-
-  const [article, subscribed] = await Promise.all([
-    getArticleDetails(slug),
-    getSubscriptionStatus(),
-  ]);
+  const article = await getArticleDetails(slug);
 
   if (!article) notFound();
 
@@ -79,18 +71,12 @@ export default async function ArticleDetailPage({ params }: Props) {
         {/* Featured Image */}
         <FeaturedImage src={article.image} alt={article.title} />
 
+        {/* Paywall boundary — only this Suspense is dynamic (reads cookies/headers).
+            Everything above stays fully cached. */}
         <div className="max-w-none mb-16">
-          {subscribed ? (
-            <ArticleContent blocks={article.content} />
-          ) : (
-            <>
-              <ArticleContent blocks={article.content.slice(0, 2)} />
-              <div className="relative mt-16">
-                <div className="h-32 bg-linear-to-b from-transparent to-white absolute inset-x-0 -top-32 pointer-events-none" />
-                <SubscribeCTA />
-              </div>
-            </>
-          )}
+          <Suspense fallback={<ArticleBodySkeleton />}>
+            <Paywall content={article.content} />
+          </Suspense>
         </div>
       </div>
 
