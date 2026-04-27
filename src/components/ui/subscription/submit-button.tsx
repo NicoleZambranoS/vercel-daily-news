@@ -2,13 +2,13 @@
 
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { prefetch, getToken, reset } from "@/lib/subscription-store";
 import { subscribeAction } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
 export default function SubmitButton({ className }: { className?: string }) {
   const [isPending, setIsPending] = useState(false);
-  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     prefetch();
@@ -24,7 +24,8 @@ export default function SubmitButton({ className }: { className?: string }) {
       }
       reset();
 
-      await subscribeAction(token, pathname);
+      await subscribeAction(token);
+      router.refresh();
     } catch {
       setIsPending(false);
     }
