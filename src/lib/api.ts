@@ -94,10 +94,14 @@ export async function getSubscriptionStatus(): Promise<boolean> {
 
   if (!token) return false;
 
-  const response = await fetchApi<Subscription>("/subscription", {
-    cache: "no-store",
-    headers: { "x-subscription-token": token },
-  });
+  try {
+    const response = await fetchApi<Subscription>("/subscription", {
+      cache: "no-store",
+      headers: { "x-subscription-token": token },
+    });
 
-  return response.success && response.data?.status === "active";
+    return response.success && response.data?.status === "active";
+  } catch {
+    return false;
+  }
 }
