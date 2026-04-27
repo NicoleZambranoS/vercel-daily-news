@@ -3,21 +3,25 @@ import { type NextRequest, NextResponse } from "next/server";
 const API_BASE_URL = process.env.VERCEL_API_URL!;
 const BYPASS_TOKEN = process.env.VERCEL_PROTECTION_BYPASS!;
 
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (!pathname.startsWith("/articles/")) {
-    return NextResponse.next();
-  }
-
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get("subscription-token")?.value;
 
-  // No cookie — let the page through, Paywall will show the teaser.
+  // No subscription cookie — pass the request through unchanged.
   if (!token) {
     return NextResponse.next();
   }
 
-  return verifyAndContinue(request, token);
+  // On article pages verify the token against the API so a manually set
+  // cookie cannot bypass the paywall. Other pages (home, search) just get
+  // the header injected — no verification needed there.
+  if (request.nextUrl.pathname.startsWith("/articles/")) {
+    return verifyAndContinue(request, token);
+  }
+
+  // Non-article pages just inject the header.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-subscription-token", token);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 async function verifyAndContinue(request: NextRequest, token: string) {
@@ -30,22 +34,23 @@ async function verifyAndContinue(request: NextRequest, token: string) {
     });
 
     if (res.ok) {
-      const data = await res.json();
-      if (data.success && data.data.status === "active") {
-        return NextResponse.next();
+      const { success, data } = await res.json();
+      if (success && data.status === "active") {
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set("x-subscription-token", token);
+        return NextResponse.next({ request: { headers: requestHeaders } });
       }
     }
   } catch (error) {
     console.error("Proxy: subscription verification failed:", error);
   }
 
-  // Token is invalid or expired, let the page through with the paywall.
-  const url = request.nextUrl.clone();
-  const response = NextResponse.redirect(url);
+  // Invalid token — remove it so the paywall shows the teaser.
+  const response = NextResponse.next();
   response.cookies.delete("subscription-token");
   return response;
 }
 
 export const config = {
-  matcher: ["/articles/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

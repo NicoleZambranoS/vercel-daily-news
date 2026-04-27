@@ -1,40 +1,25 @@
 "use client";
 
 import clsx from "clsx";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { subscribeAction, unsubscribeAction } from "@/lib/actions";
-import { getToken, reset } from "@/lib/subscription-store";
+import { prefetch, getToken } from "@/lib/subscription-store";
+import { subscribeAction } from "@/lib/actions";
 
-type SubmitButtonProps = {
-  subscribed?: boolean;
-  className?: string;
-};
-
-export default function SubmitButton({
-  subscribed = false,
-  className,
-}: SubmitButtonProps) {
+export default function SubmitButton({ className }: { className?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    prefetch();
+  }, []);
+
   function handleClick() {
     startTransition(async () => {
-      if (subscribed) {
-        await unsubscribeAction();
-        reset();
-      } else {
-        let token = await getToken();
-        if (!token) {
-          reset();
-          token = await getToken();
-        }
-        if (!token) return;
-
-        await subscribeAction(token);
-      }
-
+      const token = await getToken();
+      if (!token) return;
+      await subscribeAction(token);
       router.replace(pathname);
     });
   }
@@ -45,13 +30,7 @@ export default function SubmitButton({
       disabled={isPending}
       onClick={handleClick}
     >
-      {isPending
-        ? subscribed
-          ? "Unsubscribing…"
-          : "Subscribing…"
-        : subscribed
-          ? "Unsubscribe"
-          : "Subscribe"}
+      {isPending ? "Subscribing…" : "Subscribe"}
     </button>
   );
 }
