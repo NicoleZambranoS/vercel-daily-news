@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { prefetch, getToken, reset } from "@/lib/subscription-store";
-import { subscribeAction, unsubscribeAction } from "@/lib/actions";
+import { prepareTokenAction, subscribeAction, unsubscribeAction } from "@/lib/actions";
 
 type SubscriptionToggleProps = {
   subscribed: boolean;
@@ -13,10 +12,11 @@ export default function SubscriptionToggle({
   subscribed,
 }: SubscriptionToggleProps) {
   const [isPending, setIsPending] = useState(false);
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (!subscribed) prefetch();
+    if (!subscribed) prepareTokenAction().then(setPendingToken);
   }, [subscribed]);
 
   async function handleToggle() {
@@ -25,16 +25,10 @@ export default function SubscriptionToggle({
       if (subscribed) {
         await unsubscribeAction();
       } else {
-        const token = await getToken();
-        if (!token) {
-          setIsPending(false);
-          return;
-        }
-        reset();
-        await subscribeAction(token);
+        await subscribeAction(pendingToken);
       }
       router.refresh();
-    } catch {
+    } finally {
       setIsPending(false);
     }
   }

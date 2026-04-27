@@ -2,31 +2,24 @@
 
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { prefetch, getToken, reset } from "@/lib/subscription-store";
-import { subscribeAction } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import { prepareTokenAction, subscribeAction } from "@/lib/actions";
 
 export default function SubmitButton({ className }: { className?: string }) {
   const [isPending, setIsPending] = useState(false);
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    prefetch();
+    prepareTokenAction().then(setPendingToken);
   }, []);
 
   async function handleClick() {
     setIsPending(true);
     try {
-      const token = await getToken();
-      if (!token) {
-        setIsPending(false);
-        return;
-      }
-      reset();
-
-      await subscribeAction(token);
+      await subscribeAction(pendingToken);
       router.refresh();
-    } catch {
+    } finally {
       setIsPending(false);
     }
   }
