@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { after } from "next/server";
+import { refresh } from "next/cache";
 import { fetchApi } from "@/lib/fetch";
 import { Subscription } from "@/types/subscription";
 
@@ -12,7 +12,7 @@ export type ActionState = {
 
 const COOKIE_OPTIONS = {
   path: "/",
-  maxAge: 60 * 60 * 24 * 30,
+  maxAge: 60 * 60 * 24,
   sameSite: "lax" as const,
 };
 
@@ -30,8 +30,15 @@ export async function prepareSubscription(): Promise<string | null> {
 export async function subscribeAction(token: string): Promise<ActionState> {
   if (!token) return { success: false, error: "Missing token." };
 
+  await fetchApi<Subscription>("/subscription", {
+    method: "POST",
+    headers: { "x-subscription-token": token },
+  });
+
   const cookieStore = await cookies();
   cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
+
+  refresh();
   return { success: true };
 }
 
@@ -43,18 +50,13 @@ export async function unsubscribeAction(): Promise<ActionState> {
     return { success: false, error: "No active subscription found." };
   }
 
-  cookieStore.delete("subscription-token");
-
-  after(async () => {
-    try {
-      await fetchApi<void>("/subscription", {
-        method: "DELETE",
-        headers: { "x-subscription-token": token },
-      });
-    } catch (error) {
-      console.error("Background unsubscribe cleanup failed:", error);
-    }
+  await fetchApi<void>("/subscription", {
+    method: "DELETE",
+    headers: { "x-subscription-token": token },
   });
 
+  cookieStore.delete("subscription-token");
+
+  refresh();
   return { success: true };
 }

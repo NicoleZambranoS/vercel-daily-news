@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { getArticleDetails, getTrendingArticles } from "@/lib/api";
+import {
+  getArticleDetails,
+  getSubscriptionStatus,
+  getTrendingArticles,
+} from "@/lib/api";
 import ArticleHeader from "@/components/ui/article/article-header";
-import ArticleBody from "@/components/ui/article/article-body";
-import ArticleBodySkeleton from "@/components/ui/article/article-body-skeleton";
+import ArticleContent from "@/components/ui/article/article-content";
+import SubscribeCTA from "@/components/ui/article/subscribe-cta";
 import FeaturedImage from "@/components/ui/article/featured-image";
 import TrendingArticles from "@/components/ui/article/trending-articles";
 import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
@@ -53,7 +57,12 @@ async function TrendingSection({ slug }: { slug: string }) {
 
 export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;
-  const article = await getArticleDetails(slug);
+
+  const [article, subscribed] = await Promise.all([
+    getArticleDetails(slug),
+    getSubscriptionStatus(),
+  ]);
+
   if (!article) notFound();
 
   return (
@@ -70,9 +79,19 @@ export default async function ArticleDetailPage({ params }: Props) {
         {/* Featured Image */}
         <FeaturedImage src={article.image} alt={article.title} />
 
-        <Suspense fallback={<ArticleBodySkeleton />}>
-          <ArticleBody content={article.content} />
-        </Suspense>
+        <div className="max-w-none mb-16">
+          {subscribed ? (
+            <ArticleContent blocks={article.content} />
+          ) : (
+            <>
+              <ArticleContent blocks={article.content.slice(0, 2)} />
+              <div className="relative mt-16">
+                <div className="h-32 bg-linear-to-b from-transparent to-white absolute inset-x-0 -top-32 pointer-events-none" />
+                <SubscribeCTA />
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Trending Articles */}
