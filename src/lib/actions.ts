@@ -1,7 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { refresh } from "next/cache";
 import { fetchApi } from "@/lib/fetch";
 import { Subscription } from "@/types/subscription";
 
@@ -16,12 +15,20 @@ const COOKIE_OPTIONS = {
   sameSite: "lax" as const,
 };
 
+// Create and activate a new subscription in background
 export async function prepareSubscription(): Promise<string | null> {
   try {
     const subscription = await fetchApi<Subscription>("/subscription/create", {
       method: "POST",
     });
-    return subscription.data.token;
+    const token = subscription.data.token;
+
+    await fetchApi<Subscription>("/subscription", {
+      method: "POST",
+      headers: { "x-subscription-token": token },
+    });
+
+    return token;
   } catch {
     return null;
   }
@@ -30,15 +37,8 @@ export async function prepareSubscription(): Promise<string | null> {
 export async function subscribeAction(token: string): Promise<ActionState> {
   if (!token) return { success: false, error: "Missing token." };
 
-  await fetchApi<Subscription>("/subscription", {
-    method: "POST",
-    headers: { "x-subscription-token": token },
-  });
-
   const cookieStore = await cookies();
   cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
-
-  refresh();
   return { success: true };
 }
 
@@ -56,7 +56,5 @@ export async function unsubscribeAction(): Promise<ActionState> {
   });
 
   cookieStore.delete("subscription-token");
-
-  refresh();
   return { success: true };
 }
