@@ -2,12 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import SubscriptionToggle from "@/components/ui/subscription/subscription-toggle";
-import { getSubscriptionStatus } from "@/lib/api";
+import { getSubscriptionStatus } from "@/lib/subscription";
 import { Suspense } from "react";
+import { connection } from "next/server";
 
 async function SubscriptionStatus() {
-  const subscribed = await getSubscriptionStatus();
-  return <SubscriptionToggle subscribed={subscribed} />;
+  await connection();
+  const isSubscribed = await getSubscriptionStatus();
+  return <SubscriptionToggle isSubscribed={isSubscribed} />;
 }
 
 export default function Header() {

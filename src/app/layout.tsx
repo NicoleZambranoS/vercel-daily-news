@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import { geistSans, geistMono } from "@/components/ui/font";
 import Footer from "@/components/footer";
+import SubscriptionProvider from "@/components/ui/subscription/subscription-provider";
 
 export const metadata: Metadata = {
   title: {
@@ -42,9 +43,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.className} ${geistMono.className} antialiased bg-white/95`}
       >
-        <Header />
-        {children}
-        <Footer />
+        <SubscriptionProvider>
+          <Header />
+          {children}
+          <Footer />
+        </SubscriptionProvider>
       </body>
     </html>
   );

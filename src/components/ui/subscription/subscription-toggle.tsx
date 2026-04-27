@@ -1,69 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { prefetch, getToken, reset } from "@/lib/subscription-store";
-import { subscribeAction, unsubscribeAction } from "@/lib/actions";
+import { useSubscription } from "./subscription-provider";
 
 type SubscriptionToggleProps = {
-  subscribed: boolean;
+  isSubscribed: boolean;
 };
 
 export default function SubscriptionToggle({
-  subscribed,
+  isSubscribed,
 }: SubscriptionToggleProps) {
-  const [isPending, setIsPending] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!subscribed) prefetch();
-  }, [subscribed]);
-
-  async function handleToggle() {
-    setIsPending(true);
-    try {
-      if (subscribed) {
-        await unsubscribeAction();
-      } else {
-        const token = await getToken();
-        if (!token) {
-          setIsPending(false);
-          return;
-        }
-        reset();
-        await subscribeAction(token);
-      }
-      router.refresh();
-    } catch {
-      setIsPending(false);
-    }
-  }
+  const { isPending, error, subscribe, unsubscribe } = useSubscription();
 
   return (
     <div className="flex items-center gap-2">
-      {subscribed && (
+      {isSubscribed && (
         <span className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white">
           Subscribed
         </span>
       )}
       <button
         className={
-          subscribed
+          isSubscribed
             ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         }
-        onClick={handleToggle}
+        onClick={isSubscribed ? unsubscribe : subscribe}
         disabled={isPending}
         aria-disabled={isPending}
       >
         {isPending
-          ? subscribed
-            ? "Unsubscribing…"
-            : "Subscribing…"
-          : subscribed
+          ? isSubscribed
+            ? "Unsubscribing..."
+            : "Subscribing..."
+          : isSubscribed
             ? "Unsubscribe"
             : "Subscribe"}
       </button>
+      {error && (
+        <p className="text-sm text-red-500" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
