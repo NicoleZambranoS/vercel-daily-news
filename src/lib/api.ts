@@ -4,7 +4,6 @@ import type { Category } from "@/types/categories";
 import { fetchApi } from "@/lib/fetch";
 import { cacheLife } from "next/cache";
 import { headers } from "next/headers";
-import { Subscription } from "@/types/subscription";
 
 export async function getBreakingNews(): Promise<BreakingNews | null> {
   "use cache";
@@ -90,18 +89,5 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getSubscriptionStatus(): Promise<boolean> {
   const headersList = await headers();
-  const token = headersList.get("x-subscription-token");
-
-  if (!token) return false;
-
-  try {
-    const response = await fetchApi<Subscription>("/subscription", {
-      cache: "no-store",
-      headers: { "x-subscription-token": token },
-    });
-
-    return response.success && response.data?.status === "active";
-  } catch {
-    return false;
-  }
+  return headersList.get("x-subscription-status") === "active";
 }

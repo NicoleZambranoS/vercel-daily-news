@@ -1,14 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, TrendingUp } from "lucide-react";
-import SubmitButton from "../subscription/submit-button";
+import SubscribeButton from "@/components/ui/subscription/subscribe-button";
 import { getSubscriptionStatus } from "@/lib/api";
 import { Suspense } from "react";
+import { connection } from "next/server";
 
 async function HeroSubscribeButton() {
-  const subscribed = await getSubscriptionStatus();
-  if (subscribed) return null;
-  return <SubmitButton className="btn-gradient gap-2" />;
+  await connection();
+  const isSubscribed = await getSubscriptionStatus();
+  if (isSubscribed) return null;
+  return <SubscribeButton />;
 }
 
 export default function HeroSection() {

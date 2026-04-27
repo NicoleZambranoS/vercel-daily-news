@@ -1,48 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { prepareTokenAction, subscribeAction, unsubscribeAction } from "@/lib/actions";
+import { subscribe, unsubscribe } from "@/lib/actions";
+import { useSubscription } from "./subscription-provider";
 
 type SubscriptionToggleProps = {
-  subscribed: boolean;
+  isSubscribed: boolean;
 };
 
 export default function SubscriptionToggle({
-  subscribed,
+  isSubscribed,
 }: SubscriptionToggleProps) {
-  const [isPending, setIsPending] = useState(false);
-  const [pendingToken, setPendingToken] = useState<string | null>(null);
   const router = useRouter();
+  const { tokenRef, isPending, startTransition } = useSubscription();
 
-  useEffect(() => {
-    if (!subscribed) prepareTokenAction().then(setPendingToken);
-  }, [subscribed]);
-
-  async function handleToggle() {
-    setIsPending(true);
-    try {
-      if (subscribed) {
-        await unsubscribeAction();
+  function handleToggle() {
+    startTransition(async () => {
+      if (isSubscribed) {
+        await unsubscribe();
       } else {
-        await subscribeAction(pendingToken);
+        await subscribe(tokenRef.current ?? null);
+        tokenRef.current = null;
       }
       router.refresh();
-    } finally {
-      setIsPending(false);
-    }
+    });
   }
 
   return (
     <div className="flex items-center gap-2">
-      {subscribed && (
+      {isSubscribed && (
         <span className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white">
           Subscribed
         </span>
       )}
       <button
         className={
-          subscribed
+          isSubscribed
             ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         }
@@ -51,10 +44,10 @@ export default function SubscriptionToggle({
         aria-disabled={isPending}
       >
         {isPending
-          ? subscribed
-            ? "Unsubscribing…"
-            : "Subscribing…"
-          : subscribed
+          ? isSubscribed
+            ? "Unsubscribing..."
+            : "Subscribing..."
+          : isSubscribed
             ? "Unsubscribe"
             : "Subscribe"}
       </button>

@@ -2,59 +2,57 @@
 
 import { cookies } from "next/headers";
 import { after } from "next/server";
-import { revalidatePath } from "next/cache";
 import { fetchApi } from "@/lib/fetch";
 import type { Subscription } from "@/types/subscription";
 
+const COOKIE_NAME = "subscription-token";
+
 const COOKIE_OPTIONS = {
-  path: "/",
   httpOnly: true,
-  maxAge: 60 * 60 * 24,
-  sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 60 * 60 * 24,
+  path: "/",
 };
 
-// Called silently on mount — returns a pre-created token held in client state.
-// Does NOT touch cookies so no re-renders are triggered.
-export async function prepareTokenAction(): Promise<string | null> {
+export async function createToken(): Promise<string | null> {
   try {
-    const { data } = await fetchApi<Subscription>("/subscription/create", {
-      method: "POST",
-    });
-    return data.token;
+    const { data: created } = await fetchApi<Subscription>(
+      "/subscription/create",
+      { method: "POST" },
+    );
+    return created.token;
   } catch {
     return null;
   }
 }
 
-// token comes from prepareTokenAction; falls back to creating one if null.
-export async function subscribeAction(token: string | null): Promise<void> {
+export async function subscribe(prefetchedToken: string | null): Promise<void> {
   const cookieStore = await cookies();
 
+  let token = prefetchedToken;
+
   if (!token) {
-    const { data } = await fetchApi<Subscription>("/subscription/create", {
-      method: "POST",
-    });
-    token = data.token;
+    token = await createToken();
   }
 
-  cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
+  if (!token) return;
 
   await fetchApi<Subscription>("/subscription", {
     method: "POST",
     headers: { "x-subscription-token": token },
   });
 
-  revalidatePath("/", "layout");
+  cookieStore.set(COOKIE_NAME, token, COOKIE_OPTIONS);
 }
 
-export async function unsubscribeAction(): Promise<void> {
+export async function unsubscribe(): Promise<void> {
   const cookieStore = await cookies();
-  const token = cookieStore.get("subscription-token")?.value;
+  const token = cookieStore.get(COOKIE_NAME)?.value;
 
   if (!token) return;
 
-  cookieStore.delete("subscription-token");
+  cookieStore.delete(COOKIE_NAME);
 
   after(async () => {
     try {
@@ -66,6 +64,4 @@ export async function unsubscribeAction(): Promise<void> {
       console.error("Background unsubscribe failed:", error);
     }
   });
-
-  revalidatePath("/", "layout");
 }

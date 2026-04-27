@@ -1,6 +1,6 @@
 export type Subscription = {
   token: string;
-  status: string;
+  status: "active" | "inactive";
   subscribedAt: string;
   createdAt: string;
   updatedAt: string;
