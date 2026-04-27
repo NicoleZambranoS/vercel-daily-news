@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { subscribeAction, unsubscribeAction } from "@/lib/actions";
 import { getToken, reset } from "@/lib/subscription-store";
 
@@ -16,6 +16,7 @@ export default function SubmitButton({
   className,
 }: SubmitButtonProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
   function handleClick() {
@@ -34,7 +35,7 @@ export default function SubmitButton({
         await subscribeAction(token);
       }
 
-      router.refresh();
+      router.replace(pathname);
     });
   }
 
