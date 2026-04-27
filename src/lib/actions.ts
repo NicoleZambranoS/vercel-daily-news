@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { after } from "next/server";
 import { fetchApi } from "@/lib/fetch";
 import type { Subscription } from "@/types/subscription";
+import { revalidatePath } from "next/cache";
 
 export type ActionState = {
   success: boolean;
@@ -37,6 +38,7 @@ export async function prepareSubscription(): Promise<string | null> {
 export async function subscribeAction(token: string): Promise<ActionState> {
   const cookieStore = await cookies();
   cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -49,6 +51,7 @@ export async function unsubscribeAction(): Promise<ActionState> {
   }
 
   cookieStore.delete("subscription-token");
+  revalidatePath("/", "layout");
 
   after(async () => {
     try {
