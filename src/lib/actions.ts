@@ -2,13 +2,9 @@
 
 import { cookies } from "next/headers";
 import { after } from "next/server";
+import { revalidatePath } from "next/cache";
 import { fetchApi } from "@/lib/fetch";
 import type { Subscription } from "@/types/subscription";
-
-export type ActionState = {
-  success: boolean;
-  error?: string;
-};
 
 const COOKIE_OPTIONS = {
   path: "/",
@@ -34,32 +30,30 @@ export async function prepareSubscription(): Promise<string | null> {
   }
 }
 
-export async function subscribeAction(token: string): Promise<ActionState> {
+export async function subscribeAction(token: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
-  return { success: true };
+  revalidatePath("/", "layout");
 }
 
-export async function unsubscribeAction(): Promise<ActionState> {
+export async function unsubscribeAction(): Promise<void> {
   const cookieStore = await cookies();
   const token = cookieStore.get("subscription-token")?.value;
 
-  if (!token) {
-    return { success: false, error: "No active subscription found." };
+  if (token) {
+    cookieStore.delete("subscription-token");
+
+    after(async () => {
+      try {
+        await fetchApi<void>("/subscription", {
+          method: "DELETE",
+          headers: { "x-subscription-token": token },
+        });
+      } catch (error) {
+        console.error("Background unsubscribe failed:", error);
+      }
+    });
   }
 
-  cookieStore.delete("subscription-token");
-
-  after(async () => {
-    try {
-      await fetchApi<void>("/subscription", {
-        method: "DELETE",
-        headers: { "x-subscription-token": token },
-      });
-    } catch (error) {
-      console.error("Background unsubscribe failed:", error);
-    }
-  });
-
-  return { success: true };
+  revalidatePath("/", "layout");
 }

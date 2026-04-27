@@ -1,29 +1,16 @@
 import type { ContentBlock } from "@/types/article";
 import ArticleContent from "./article-content";
 import SubscribeCTA from "./subscribe-cta";
-import { headers } from "next/headers";
-import { fetchApi } from "@/lib/fetch";
-import { Subscription } from "@/types/subscription";
+import { getSubscriptionStatus } from "@/lib/api";
 
 type PaywallProps = {
   content: ContentBlock[];
 };
 
-const checkSubscription = async (token: string) => {
-  const response = await fetchApi<Subscription>("/subscription", {
-    cache: "no-store",
-    headers: { "x-subscription-token": token },
-  });
-  return response.success && response.data.status === "active";
-};
-
 export default async function Paywall({ content }: PaywallProps) {
-  const headersList = await headers();
-  const token = headersList.get("x-subscription-token");
+  const subscribed = await getSubscriptionStatus();
 
-  const isActive = token ? await checkSubscription(token) : false;
-
-  if (isActive) {
+  if (subscribed) {
     return <ArticleContent blocks={content} />;
   }
 

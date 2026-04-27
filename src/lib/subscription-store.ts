@@ -9,6 +9,8 @@ export function prefetch(): void {
 }
 
 export async function getToken(): Promise<string | null> {
+  if (!inflight) prefetch();
+  if (!inflight) return null;
   return inflight;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { prefetch, getToken, reset } from "@/lib/subscription-store";
 import { subscribeAction, unsubscribeAction } from "@/lib/actions";
@@ -12,6 +12,7 @@ type SubscriptionToggleProps = {
 export default function SubscriptionToggle({
   subscribed,
 }: SubscriptionToggleProps) {
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,15 +20,23 @@ export default function SubscriptionToggle({
   }, [subscribed]);
 
   async function handleToggle() {
-    if (subscribed) {
-      await unsubscribeAction();
-      reset();
-    } else {
-      const token = await getToken();
-      if (!token) return;
-      await subscribeAction(token);
+    setIsPending(true);
+    try {
+      if (subscribed) {
+        await unsubscribeAction();
+      } else {
+        const token = await getToken();
+        if (!token) {
+          setIsPending(false);
+          return;
+        }
+        reset();
+        await subscribeAction(token);
+      }
+      router.refresh();
+    } catch {
+      setIsPending(false);
     }
-    router.refresh();
   }
 
   return (
@@ -40,12 +49,20 @@ export default function SubscriptionToggle({
       <button
         className={
           subscribed
-            ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black transition-colors cursor-pointer"
-            : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer"
+            ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         }
         onClick={handleToggle}
+        disabled={isPending}
+        aria-disabled={isPending}
       >
-        {subscribed ? "Unsubscribe" : "Subscribe"}
+        {isPending
+          ? subscribed
+            ? "Unsubscribing…"
+            : "Subscribing…"
+          : subscribed
+            ? "Unsubscribe"
+            : "Subscribe"}
       </button>
     </div>
   );
