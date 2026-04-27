@@ -1,24 +1,63 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-export function proxy(request: NextRequest) {
-  const hasSubscription = request.cookies.has("subscription-token");
+const API_BASE_URL = process.env.VERCEL_API_URL!;
+const BYPASS_TOKEN = process.env.VERCEL_PROTECTION_BYPASS!;
 
-  // Pass access level to downstream pages via request header.
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set(
-    "x-subscription-access",
-    hasSubscription ? "full" : "preview",
-  );
+export default async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
+  // Paywall enforcement for article pages via proxy
+  if (pathname.startsWith("/articles/")) {
+    const token = request.cookies.get("subscription-token")?.value;
 
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  return response;
+    // Create response with request headers to pass subscription status to the page
+    const requestHeaders = new Headers(request.headers);
+
+    if (!token) {
+      requestHeaders.set("x-subscription-status", "inactive");
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
+    }
+
+    // Verify subscription status with API before returning the response
+    try {
+      const res = await fetch(`${API_BASE_URL}/subscription`, {
+        headers: {
+          "x-vercel-protection-bypass": BYPASS_TOKEN,
+          "x-subscription-token": token,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data.status === "active") {
+          requestHeaders.set("x-subscription-status", "active");
+          return NextResponse.next({
+            request: {
+              headers: requestHeaders,
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Proxy: Subscription verification failed:", error);
+    }
+
+    // Not subscribed or error - mark as inactive
+    requestHeaders.set("x-subscription-status", "inactive");
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/articles/:path*"],
 };

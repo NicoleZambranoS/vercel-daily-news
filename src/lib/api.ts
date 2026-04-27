@@ -3,7 +3,7 @@ import type { Article, BreakingNews } from "@/types/article";
 import type { Category } from "@/types/categories";
 import { fetchApi } from "@/lib/fetch";
 import { cacheLife } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 export async function getBreakingNews(): Promise<BreakingNews | null> {
   "use cache";
@@ -88,6 +88,11 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getSubscriptionStatus(): Promise<boolean> {
+  const requestHeaders = await headers();
+  const proxyStatus = requestHeaders.get("x-subscription-status");
+
+  if (proxyStatus) return proxyStatus === "active";
+
   const cookieStore = await cookies();
-  return !!cookieStore.get("subscription-token")?.value;
+  return cookieStore.has("subscription-token");
 }

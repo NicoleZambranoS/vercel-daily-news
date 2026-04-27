@@ -1,7 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { after } from "next/server";
 import { fetchApi } from "@/lib/fetch";
 import { Subscription } from "@/types/subscription";
 
@@ -12,16 +11,24 @@ export type ActionState = {
 
 const COOKIE_OPTIONS = {
   path: "/",
-  maxAge: 60 * 60 * 24 * 30,
+  maxAge: 60 * 60 * 24,
   sameSite: "lax" as const,
 };
 
+// Create and activate a new subscription in background
 export async function prepareSubscription(): Promise<string | null> {
   try {
     const subscription = await fetchApi<Subscription>("/subscription/create", {
       method: "POST",
     });
-    return subscription.data.token;
+    const token = subscription.data.token;
+
+    await fetchApi<Subscription>("/subscription", {
+      method: "POST",
+      headers: { "x-subscription-token": token },
+    });
+
+    return token;
   } catch {
     return null;
   }
@@ -43,18 +50,11 @@ export async function unsubscribeAction(): Promise<ActionState> {
     return { success: false, error: "No active subscription found." };
   }
 
-  cookieStore.delete("subscription-token");
-
-  after(async () => {
-    try {
-      await fetchApi<void>("/subscription", {
-        method: "DELETE",
-        headers: { "x-subscription-token": token },
-      });
-    } catch (error) {
-      console.error("Background unsubscribe cleanup failed:", error);
-    }
+  await fetchApi<void>("/subscription", {
+    method: "DELETE",
+    headers: { "x-subscription-token": token },
   });
 
+  cookieStore.delete("subscription-token");
   return { success: true };
 }

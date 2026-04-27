@@ -1,11 +1,10 @@
 "use client";
 
 import clsx from "clsx";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { subscribeAction, unsubscribeAction } from "@/lib/actions";
 import { getToken, reset } from "@/lib/subscription-store";
-import { SubscriptionModal } from "./subscription-modal";
 
 type SubmitButtonProps = {
   subscribed?: boolean;
@@ -16,24 +15,13 @@ export default function SubmitButton({
   subscribed = false,
   className,
 }: SubmitButtonProps) {
-  const [showModal, setShowModal] = useState(false);
-  const [, startTransition] = useTransition();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  async function handleAction() {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Step 1 — run the server action (sets/deletes the cookie).
+  function handleClick() {
+    startTransition(async () => {
       if (subscribed) {
-        const result = await unsubscribeAction();
-        if (!result.success) {
-          setError(result.error ?? "Failed to unsubscribe. Please try again.");
-          return;
-        }
+        await unsubscribeAction();
         reset();
       } else {
         let token = await getToken();
@@ -41,52 +29,28 @@ export default function SubmitButton({
           reset();
           token = await getToken();
         }
-        if (!token) {
-          setError("Couldn't subscribe. Please try again.");
-          return;
-        }
+        if (!token) return;
 
-        const result = await subscribeAction(token);
-        if (!result.success) {
-          setError(result.error ?? "Failed to subscribe. Please try again.");
-          return;
-        }
+        await subscribeAction(token);
       }
 
-      setShowModal(false);
-
-      // Refresh the RSC in its own isolated transition.
-      startTransition(() => {
-        router.refresh();
-      });
-    } catch (error) {
-      console.error(error);
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+      router.refresh();
+    });
   }
 
   return (
-    <>
-      <button
-        className={clsx("cursor-pointer", className)}
-        onClick={() => {
-          setShowModal(true);
-          setError(null);
-        }}
-      >
-        {subscribed ? "Unsubscribe" : "Subscribe"}
-      </button>
-      {showModal && (
-        <SubscriptionModal
-          onClose={() => setShowModal(false)}
-          onAction={handleAction}
-          isPending={isLoading}
-          error={error}
-          subscribed={subscribed}
-        />
-      )}
-    </>
+    <button
+      className={clsx("cursor-pointer", className)}
+      disabled={isPending}
+      onClick={handleClick}
+    >
+      {isPending
+        ? subscribed
+          ? "Unsubscribing…"
+          : "Subscribing…"
+        : subscribed
+          ? "Unsubscribe"
+          : "Subscribe"}
+    </button>
   );
 }
