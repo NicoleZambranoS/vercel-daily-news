@@ -1,14 +1,15 @@
 import type { ContentBlock } from "@/types/article";
-import { getSubscriptionStatus } from "@/lib/api";
 import ArticleContent from "./article-content";
 import SubscribeCTA from "./subscribe-cta";
+import { headers } from "next/headers";
 
 type PaywallProps = {
   content: ContentBlock[];
 };
 
 export default async function Paywall({ content }: PaywallProps) {
-  const subscribed = await getSubscriptionStatus();
+  const headersList = await headers();
+  const subscribed = headersList.has("x-subscription-token");
 
   if (subscribed) {
     return <ArticleContent blocks={content} />;
