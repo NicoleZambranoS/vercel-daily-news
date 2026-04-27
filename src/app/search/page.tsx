@@ -7,8 +7,8 @@ import SearchHeroSection from "@/components/ui/search/search-hero-section";
 import SearchInput from "@/components/ui/search/search-input";
 import CategoryFilter from "@/components/ui/search/category-filter";
 import {
-  SearchTransitionProvider,
   ArticlesLoadingWrapper,
+  SearchTransitionProvider,
 } from "@/components/ui/search/search-transition-provider";
 
 export const metadata: Metadata = {

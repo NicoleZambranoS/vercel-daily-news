@@ -36,6 +36,7 @@ export function useSearchTransition() {
   return useContext(SearchTransitionContext);
 }
 
+// Swaps to the skeleton while a search transition is making the request
 export function ArticlesLoadingWrapper({ children }: { children: ReactNode }) {
   const { isPending } = useSearchTransition();
   return (
