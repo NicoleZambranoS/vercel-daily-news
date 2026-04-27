@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { fetchApi } from "@/lib/fetch";
 import type { Subscription } from "@/types/subscription";
 
@@ -36,6 +37,7 @@ export async function subscribeAction(
 ): Promise<never> {
   const cookieStore = await cookies();
   cookieStore.set("subscription-token", token, COOKIE_OPTIONS);
+  revalidatePath(pathname);
   redirect(pathname);
 }
 
@@ -58,5 +60,6 @@ export async function unsubscribeAction(pathname: string): Promise<never> {
     });
   }
 
+  revalidatePath(pathname);
   redirect(pathname);
 }
