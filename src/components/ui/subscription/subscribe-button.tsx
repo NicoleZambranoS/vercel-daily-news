@@ -21,7 +21,7 @@ export default function SubscribeButton({ className }: SubscribeButtonProps) {
         setError(result.error);
         return;
       }
-      router.refresh();
+      setTimeout(() => router.refresh(), 0);
     });
   };
 

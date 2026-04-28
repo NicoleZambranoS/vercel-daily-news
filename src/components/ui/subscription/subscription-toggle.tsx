@@ -31,7 +31,8 @@ export default function SubscriptionToggle({
         setError(result.error);
         return;
       }
-      router.refresh();
+
+      setTimeout(() => router.refresh(), 0);
     });
   };
 
