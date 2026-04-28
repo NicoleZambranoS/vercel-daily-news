@@ -74,8 +74,9 @@ export async function unsubscribe(): Promise<ActionResult> {
 
   if (token) {
     cookieStore.delete(SUBSCRIPTION_COOKIE);
+    cookieStore.delete(SUBSCRIPTION_ACTIVE_COOKIE);
 
-    // Defer the actual API call — it doesn't need to block the response.
+    // Delete the subscription behind the scenes
     after(async () => {
       try {
         await fetchApi<void>("/subscription", {
