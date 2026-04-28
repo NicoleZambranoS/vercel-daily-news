@@ -16,7 +16,7 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const token = request.cookies.get(SUBSCRIPTION_COOKIE)?.value;
 
-  // No token — prefetch one
+  // No token, prefetch one
   if (!token) {
     requestHeaders.set(HEADER_STATUS, "inactive");
 
@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
     );
     return forward(requestHeaders);
   } catch {
-    // Token is invalid/tampered — delete it and prefetch a valid one
+    // Token is invalid/tampered, delete it and prefetch a valid one
     requestHeaders.set(HEADER_STATUS, "inactive");
     const response = forward(requestHeaders);
     response.cookies.delete(SUBSCRIPTION_COOKIE);
@@ -55,7 +55,7 @@ export async function proxy(request: NextRequest) {
       });
       response.cookies.set(SUBSCRIPTION_COOKIE, data.token, COOKIE_OPTIONS);
     } catch {
-      // Prefetch failed — next request will retry
+      // Prefetch failed, next request will retry
     }
 
     return response;
