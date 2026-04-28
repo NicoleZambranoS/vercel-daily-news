@@ -27,8 +27,11 @@ export async function getSubscriptionStatus(): Promise<boolean> {
   if (status === "active") return true;
   if (status === "inactive") return false;
 
-  // Verify with cache
   const token = headersList.get(HEADER_TOKEN);
   if (!token) return false;
+
+  // Skip the slow API call if the server action is re-rendering
+  if (headersList.get("next-action")) return false;
+
   return verifySubscription(token);
 }
