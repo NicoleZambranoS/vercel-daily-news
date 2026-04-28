@@ -30,8 +30,5 @@ export async function getSubscriptionStatus(): Promise<boolean> {
   const token = headersList.get(HEADER_TOKEN);
   if (!token) return false;
 
-  // Skip the slow API call if the server action is re-rendering
-  if (headersList.get("next-action")) return false;
-
   return verifySubscription(token);
 }
