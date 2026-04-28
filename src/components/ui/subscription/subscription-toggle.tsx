@@ -1,6 +1,8 @@
 "use client";
 
-import { useSubscription } from "./subscription-provider";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { subscribe, unsubscribe } from "@/lib/actions";
 
 type SubscriptionToggleProps = {
   isSubscribed: boolean;
@@ -9,7 +11,19 @@ type SubscriptionToggleProps = {
 export default function SubscriptionToggle({
   isSubscribed,
 }: SubscriptionToggleProps) {
-  const { isPending, error, subscribe, unsubscribe } = useSubscription();
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleClick = () => {
+    startTransition(async () => {
+      if (isSubscribed) {
+        await unsubscribe();
+      } else {
+        await subscribe();
+      }
+      router.refresh();
+    });
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -24,7 +38,7 @@ export default function SubscriptionToggle({
             ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         }
-        onClick={isSubscribed ? unsubscribe : subscribe}
+        onClick={handleClick}
         disabled={isPending}
         aria-disabled={isPending}
       >
@@ -36,11 +50,6 @@ export default function SubscriptionToggle({
             ? "Unsubscribe"
             : "Subscribe"}
       </button>
-      {error && (
-        <p className="text-sm text-red-500" role="alert">
-          {error}
-        </p>
-      )}
     </div>
   );
 }

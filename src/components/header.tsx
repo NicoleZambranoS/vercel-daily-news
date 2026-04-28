@@ -53,7 +53,7 @@ export default function Header() {
               <Search className="w-5 h-5" />
             </Link>
 
-            {/* Subscription indicator */}
+            {/* Subscription status*/}
             <Suspense
               fallback={
                 <div className="h-7 w-20 bg-gray-100 rounded-full animate-pulse" />

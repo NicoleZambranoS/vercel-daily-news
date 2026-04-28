@@ -1,65 +1,42 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
-import { after } from "next/server";
 import { fetchApi } from "@/lib/fetch";
 import type { Subscription } from "@/types/subscription";
 import {
   SUBSCRIPTION_COOKIE,
-  PREFETCH_COOKIE,
   COOKIE_OPTIONS,
   HEADER_TOKEN,
 } from "@/lib/subscription";
 
-export async function subscribe(): Promise<{ error?: string }> {
+export async function subscribe() {
   const cookieStore = await cookies();
-
-  let token = cookieStore.get(PREFETCH_COOKIE)?.value;
+  let token = cookieStore.get(SUBSCRIPTION_COOKIE)?.value;
 
   if (!token) {
-    try {
-      const { data } = await fetchApi<Subscription>("/subscription/create", {
-        method: "POST",
-      });
-      token = data.token;
-    } catch {
-      return { error: "Unable to create subscription. Please try again." };
-    }
-  }
-
-  try {
-    await fetchApi<Subscription>("/subscription", {
+    const { data } = await fetchApi<Subscription>("/subscription/create", {
       method: "POST",
-      headers: { [HEADER_TOKEN]: token },
     });
-  } catch {
-    return { error: "Subscription failed. Please try again." };
+    token = data.token;
+    cookieStore.set(SUBSCRIPTION_COOKIE, token, COOKIE_OPTIONS);
   }
 
-  cookieStore.set(SUBSCRIPTION_COOKIE, token, COOKIE_OPTIONS);
-  cookieStore.delete(PREFETCH_COOKIE);
-  return {};
+  // Activate the subscription
+  await fetchApi<Subscription>("/subscription", {
+    method: "POST",
+    headers: { [HEADER_TOKEN]: token },
+  });
+  // Client-side router.refresh() triggers proxy to re-verify
 }
 
-export async function unsubscribe(): Promise<{ error?: string }> {
+export async function unsubscribe() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SUBSCRIPTION_COOKIE)?.value;
 
-  if (!token) return { error: "No active subscription found." };
-
-  cookieStore.delete(SUBSCRIPTION_COOKIE);
-
-  after(async () => {
-    try {
-      await fetchApi<void>("/subscription", {
-        method: "DELETE",
-        headers: { [HEADER_TOKEN]: token },
-      });
-    } catch (error) {
-      console.error("Background unsubscribe failed:", error);
-    }
-  });
-
-  return {};
+  if (token) {
+    await fetchApi<void>("/subscription", {
+      method: "DELETE",
+      headers: { [HEADER_TOKEN]: token },
+    });
+  }
 }

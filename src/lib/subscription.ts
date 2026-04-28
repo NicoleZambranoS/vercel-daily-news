@@ -1,10 +1,9 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 
-// Cookie names
+// Cookie name — single cookie for the subscription token
 export const SUBSCRIPTION_COOKIE = "subscription-token";
-export const PREFETCH_COOKIE = "prefetch-token";
 
-// Header names
+// Header names set by the proxy
 export const HEADER_TOKEN = "x-subscription-token";
 export const HEADER_STATUS = "x-subscription-status";
 
@@ -17,6 +16,6 @@ export const COOKIE_OPTIONS = {
 };
 
 export async function getSubscriptionStatus(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return !!cookieStore.get(SUBSCRIPTION_COOKIE)?.value;
+  const headersList = await headers();
+  return headersList.get(HEADER_STATUS) === "active";
 }
