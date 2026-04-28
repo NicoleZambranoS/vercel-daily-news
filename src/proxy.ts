@@ -1,9 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { fetchApi } from "@/lib/fetch";
-import type { Subscription } from "@/types/subscription";
 import {
   SUBSCRIPTION_COOKIE,
-  COOKIE_OPTIONS,
+  SUBSCRIPTION_ACTIVE_COOKIE,
   HEADER_TOKEN,
   HEADER_STATUS,
 } from "@/lib/subscription";
@@ -16,50 +14,24 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const token = request.cookies.get(SUBSCRIPTION_COOKIE)?.value;
 
-  // No token, prefetch one
+  // User is not subscribed
   if (!token) {
     requestHeaders.set(HEADER_STATUS, "inactive");
-
-    try {
-      const { data } = await fetchApi<Subscription>("/subscription/create", {
-        method: "POST",
-      });
-      const response = forward(requestHeaders);
-      response.cookies.set(SUBSCRIPTION_COOKIE, data.token, COOKIE_OPTIONS);
-      return response;
-    } catch {
-      return forward(requestHeaders);
-    }
-  }
-
-  // Verify existing subscription (access control)
-  try {
-    const { data } = await fetchApi<Subscription>("/subscription", {
-      headers: { [HEADER_TOKEN]: token },
-    });
-
-    requestHeaders.set(
-      HEADER_STATUS,
-      data?.status === "active" ? "active" : "inactive",
-    );
     return forward(requestHeaders);
-  } catch {
-    // Token is invalid/tampered, delete it and prefetch a valid one
-    requestHeaders.set(HEADER_STATUS, "inactive");
-    const response = forward(requestHeaders);
-    response.cookies.delete(SUBSCRIPTION_COOKIE);
-
-    try {
-      const { data } = await fetchApi<Subscription>("/subscription/create", {
-        method: "POST",
-      });
-      response.cookies.set(SUBSCRIPTION_COOKIE, data.token, COOKIE_OPTIONS);
-    } catch {
-      // Prefetch failed, next request will retry
-    }
-
-    return response;
   }
+
+  // Just activated by the subscribe action
+  const activationSignal = request.cookies.get(
+    SUBSCRIPTION_ACTIVE_COOKIE,
+  )?.value;
+  if (activationSignal && activationSignal === token) {
+    requestHeaders.set(HEADER_STATUS, "active");
+    return forward(requestHeaders);
+  }
+
+  // Set the token header so the API can verify the subscription
+  requestHeaders.set(HEADER_TOKEN, token);
+  return forward(requestHeaders);
 }
 
 export const config = {

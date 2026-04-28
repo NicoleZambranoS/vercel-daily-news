@@ -1,8 +1,10 @@
 import type { PaginationMeta } from "@/types/api";
 import type { Article, BreakingNews } from "@/types/article";
 import type { Category } from "@/types/categories";
+import type { Subscription } from "@/types/subscription";
 import { fetchApi } from "@/lib/fetch";
 import { cacheLife } from "next/cache";
+import { HEADER_TOKEN } from "@/lib/subscription";
 
 export async function getBreakingNews(): Promise<BreakingNews | null> {
   "use cache";
@@ -71,6 +73,20 @@ export async function getTrendingArticles(exclude: string): Promise<Article[]> {
     return res.data ?? [];
   } catch {
     return [];
+  }
+}
+
+export async function verifySubscription(token: string): Promise<boolean> {
+  "use cache";
+  cacheLife({ stale: 30, revalidate: 60, expire: 300 });
+
+  try {
+    const { data } = await fetchApi<Subscription>("/subscription", {
+      headers: { [HEADER_TOKEN]: token },
+    });
+    return data?.status === "active";
+  } catch {
+    return false;
   }
 }
 

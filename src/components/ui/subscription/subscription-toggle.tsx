@@ -1,8 +1,8 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { subscribe, unsubscribe } from "@/lib/actions";
+import { subscribe, unsubscribe, prepareSubscription } from "@/lib/actions";
 
 type SubscriptionToggleProps = {
   isSubscribed: boolean;
@@ -12,14 +12,24 @@ export default function SubscriptionToggle({
   isSubscribed,
 }: SubscriptionToggleProps) {
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  // Pre-create a subscription token in the background so it's ready when the user clicks subscribe.
+  useEffect(() => {
+    if (!isSubscribed) {
+      prepareSubscription();
+    }
+  }, [isSubscribed]);
+
   const handleClick = () => {
+    setError(null);
     startTransition(async () => {
-      if (isSubscribed) {
-        await unsubscribe();
-      } else {
-        await subscribe();
+      const result = isSubscribed ? await unsubscribe() : await subscribe();
+
+      if (result.error) {
+        setError(result.error);
+        return;
       }
       router.refresh();
     });
@@ -27,6 +37,7 @@ export default function SubscriptionToggle({
 
   return (
     <div className="flex items-center gap-2">
+      {error && <span className="text-xs text-red-600">{error}</span>}
       {isSubscribed && (
         <span className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white">
           Subscribed

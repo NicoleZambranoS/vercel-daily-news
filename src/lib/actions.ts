@@ -1,42 +1,92 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import { fetchApi } from "@/lib/fetch";
 import type { Subscription } from "@/types/subscription";
 import {
   SUBSCRIPTION_COOKIE,
+  SUBSCRIPTION_ACTIVE_COOKIE,
   COOKIE_OPTIONS,
   HEADER_TOKEN,
 } from "@/lib/subscription";
+import { verifySubscription } from "@/lib/api";
 
-export async function subscribe() {
+export async function prepareSubscription() {
   const cookieStore = await cookies();
-  let token = cookieStore.get(SUBSCRIPTION_COOKIE)?.value;
+  if (cookieStore.get(SUBSCRIPTION_COOKIE)?.value) return;
 
-  if (!token) {
+  try {
     const { data } = await fetchApi<Subscription>("/subscription/create", {
       method: "POST",
     });
-    token = data.token;
-    cookieStore.set(SUBSCRIPTION_COOKIE, token, COOKIE_OPTIONS);
+    cookieStore.set(SUBSCRIPTION_COOKIE, data.token, COOKIE_OPTIONS);
+  } catch {
+    // Silently fail, subscribe() will retry
   }
-
-  // Activate the subscription
-  await fetchApi<Subscription>("/subscription", {
-    method: "POST",
-    headers: { [HEADER_TOKEN]: token },
-  });
-  // Client-side router.refresh() triggers proxy to re-verify
 }
 
-export async function unsubscribe() {
+type ActionResult = { error?: string };
+
+export async function subscribe(): Promise<ActionResult> {
+  const cookieStore = await cookies();
+  let token = cookieStore.get(SUBSCRIPTION_COOKIE)?.value;
+
+  // Create token if not already created
+  if (!token) {
+    try {
+      const { data } = await fetchApi<Subscription>("/subscription/create", {
+        method: "POST",
+      });
+      token = data.token;
+      cookieStore.set(SUBSCRIPTION_COOKIE, token, COOKIE_OPTIONS);
+    } catch {
+      return { error: "Unable to subscribe right now. Please try again." };
+    }
+  }
+
+  // Set the active cookie so the proxy can skip verification on the immediate router.refresh() after activation.
+  cookieStore.set(SUBSCRIPTION_ACTIVE_COOKIE, token, {
+    ...COOKIE_OPTIONS,
+    maxAge: 30,
+  });
+
+  // Activate the subscription behind the scenes
+  const tokenToActivate = token;
+  after(async () => {
+    try {
+      await fetchApi<Subscription>("/subscription", {
+        method: "POST",
+        headers: { [HEADER_TOKEN]: tokenToActivate },
+      });
+      await verifySubscription(tokenToActivate);
+    } catch {
+      // Silently fail
+    }
+  });
+
+  return {};
+}
+
+export async function unsubscribe(): Promise<ActionResult> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SUBSCRIPTION_COOKIE)?.value;
 
   if (token) {
-    await fetchApi<void>("/subscription", {
-      method: "DELETE",
-      headers: { [HEADER_TOKEN]: token },
+    cookieStore.delete(SUBSCRIPTION_COOKIE);
+
+    // Defer the actual API call — it doesn't need to block the response.
+    after(async () => {
+      try {
+        await fetchApi<void>("/subscription", {
+          method: "DELETE",
+          headers: { [HEADER_TOKEN]: token },
+        });
+      } catch {
+        // Silently fail
+      }
     });
   }
+
+  return {};
 }

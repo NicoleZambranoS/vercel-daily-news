@@ -1,7 +1,11 @@
 import { headers } from "next/headers";
+import { verifySubscription } from "@/lib/api";
 
 // Cookie name — single cookie for the subscription token
 export const SUBSCRIPTION_COOKIE = "subscription-token";
+
+// Cookie set by the subscribe action so the proxy can skip verification on the immediate router.refresh() after activation.
+export const SUBSCRIPTION_ACTIVE_COOKIE = "subscription-active";
 
 // Header names set by the proxy
 export const HEADER_TOKEN = "x-subscription-token";
@@ -17,5 +21,14 @@ export const COOKIE_OPTIONS = {
 
 export async function getSubscriptionStatus(): Promise<boolean> {
   const headersList = await headers();
-  return headersList.get(HEADER_STATUS) === "active";
+
+  // Proxy already determined status from cookie signals
+  const status = headersList.get(HEADER_STATUS);
+  if (status === "active") return true;
+  if (status === "inactive") return false;
+
+  // Verify with cache
+  const token = headersList.get(HEADER_TOKEN);
+  if (!token) return false;
+  return verifySubscription(token);
 }
