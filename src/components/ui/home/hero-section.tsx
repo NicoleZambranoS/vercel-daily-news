@@ -4,10 +4,8 @@ import { ArrowRight, TrendingUp } from "lucide-react";
 import SubscribeButton from "@/components/ui/subscription/subscribe-button";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { Suspense } from "react";
-import { connection } from "next/server";
 
 async function HeroSubscribeButton() {
-  await connection();
   const isSubscribed = await getSubscriptionStatus();
   if (isSubscribed) return null;
   return <SubscribeButton />;

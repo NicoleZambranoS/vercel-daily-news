@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { fetchApi } from "@/lib/fetch";
 import type { Subscription } from "@/types/subscription";
@@ -11,30 +12,21 @@ import {
   HEADER_TOKEN,
 } from "@/lib/subscription";
 
-async function createToken(): Promise<string | null> {
-  try {
-    const { data: created } = await fetchApi<Subscription>(
-      "/subscription/create",
-      { method: "POST" },
-    );
-    return created.token;
-  } catch {
-    return null;
-  }
-}
-
 export async function subscribe(): Promise<{ error?: string }> {
   const cookieStore = await cookies();
 
-  // Use the token prefetched by the proxy, fall back to creating one on the fly
   let token = cookieStore.get(PREFETCH_COOKIE)?.value;
 
   if (!token) {
-    token = (await createToken()) ?? undefined;
+    try {
+      const { data } = await fetchApi<Subscription>("/subscription/create", {
+        method: "POST",
+      });
+      token = data.token;
+    } catch {
+      return { error: "Unable to create subscription. Please try again." };
+    }
   }
-
-  if (!token)
-    return { error: "Unable to create subscription. Please try again." };
 
   try {
     await fetchApi<Subscription>("/subscription", {
@@ -57,11 +49,6 @@ export async function unsubscribe(): Promise<{ error?: string }> {
   if (!token) return { error: "No active subscription found." };
 
   cookieStore.delete(SUBSCRIPTION_COOKIE);
-
-  const prefetch = await createToken();
-  if (prefetch) {
-    cookieStore.set(PREFETCH_COOKIE, prefetch, COOKIE_OPTIONS);
-  }
 
   after(async () => {
     try {

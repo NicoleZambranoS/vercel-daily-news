@@ -1,7 +1,6 @@
 import type { ContentBlock } from "@/types/article";
 import ArticleContent from "./article-content";
 import { getSubscriptionStatus } from "@/lib/subscription";
-import { connection } from "next/server";
 import SubscribeButton from "../subscription/subscribe-button";
 
 type PaywallProps = {
@@ -9,7 +8,6 @@ type PaywallProps = {
 };
 
 export default async function Paywall({ content }: PaywallProps) {
-  await connection();
   const isSubscribed = await getSubscriptionStatus();
 
   if (isSubscribed) {

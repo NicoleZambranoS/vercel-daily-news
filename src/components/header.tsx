@@ -4,10 +4,8 @@ import { Search } from "lucide-react";
 import SubscriptionToggle from "@/components/ui/subscription/subscription-toggle";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { Suspense } from "react";
-import { connection } from "next/server";
 
 async function SubscriptionStatus() {
-  await connection();
   const isSubscribed = await getSubscriptionStatus();
   return <SubscriptionToggle isSubscribed={isSubscribed} />;
 }

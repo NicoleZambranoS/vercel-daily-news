@@ -6,7 +6,6 @@ import {
   useContext,
   useEffect,
   useState,
-  useTransition,
   type ReactNode,
 } from "react";
 import {
@@ -38,23 +37,21 @@ export default function SubscriptionProvider({
 }: {
   children: ReactNode;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const exec = useCallback(
-    (action: typeof subscribeAction) => {
-      setError(null);
-      startTransition(async () => {
-        try {
-          const result = await action();
-          if (result.error) setError(result.error);
-        } catch {
-          setError("Something went wrong. Please try again.");
-        }
-      });
-    },
-    [startTransition],
-  );
+  const exec = useCallback(async (action: typeof subscribeAction) => {
+    setError(null);
+    setIsPending(true);
+    try {
+      const result = await action();
+      if (result.error) setError(result.error);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
 
   const subscribe = useCallback(() => exec(subscribeAction), [exec]);
   const unsubscribe = useCallback(() => exec(unsubscribeAction), [exec]);
