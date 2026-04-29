@@ -1,13 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import { Search as SearchIcon } from "lucide-react";
+import { Loader2, Search as SearchIcon } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { useUpdateSearchParams } from "@/hooks/use-update-search-params";
 import { useSearchTransition } from "./search-transition-provider";
 
 export default function SearchInput({ placeholder }: { placeholder: string }) {
-  const { startTransition } = useSearchTransition();
+  const { startTransition, isPending } = useSearchTransition();
   const { searchParams, updateParams } = useUpdateSearchParams(startTransition);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -58,8 +58,12 @@ export default function SearchInput({ placeholder }: { placeholder: string }) {
       <button
         type="button"
         onClick={handleSearchButtonClick}
-        className="flex items-center gap-1.5 rounded-md bg-gray-900 px-4 py-[9px] text-sm font-medium text-white hover:bg-gray-700 transition-colors"
+        className="flex items-center gap-1.5 rounded-md bg-gray-900 px-4 py-[9px] text-sm font-medium text-white hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={isPending}
       >
+        {isPending ? (
+          <Loader2 className="h-[16px] w-[16px] animate-spin mr-2" />
+        ) : null}
         <SearchIcon className="h-[16px] w-[16px]" />
         Search
       </button>
