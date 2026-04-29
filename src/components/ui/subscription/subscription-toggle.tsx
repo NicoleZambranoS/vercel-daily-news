@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useTransition, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { subscribe, unsubscribe, prepareSubscription } from "@/lib/actions";
 
 type SubscriptionToggleProps = {
@@ -11,28 +10,31 @@ type SubscriptionToggleProps = {
 export default function SubscriptionToggle({
   isSubscribed,
 }: SubscriptionToggleProps) {
-  const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
-  // Pre-create a subscription token in the background so it's ready when the user clicks subscribe.
   useEffect(() => {
     if (!isSubscribed) {
       prepareSubscription();
     }
   }, [isSubscribed]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     setError(null);
-    startTransition(async () => {
-      const result = isSubscribed ? await unsubscribe() : await subscribe();
+    setLoading(true);
+    const result = isSubscribed
+      ? await unsubscribe()
+      : await subscribe();
 
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-      router.refresh();
-    });
+    if (result.error) {
+      setError(result.error);
+      setLoading(false);
+      return;
+    }
+    // Full reload to trigger a fresh GET through the proxy with the
+    // updated cookies. router.refresh() can't be used reliably until
+    // Next.js 16.3.0 ships the fix for vercel/next.js#86055.
+    window.location.reload();
   };
 
   return (
@@ -50,16 +52,10 @@ export default function SubscriptionToggle({
             : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         }
         onClick={handleClick}
-        disabled={isPending}
-        aria-disabled={isPending}
+        disabled={loading}
+        aria-disabled={loading}
       >
-        {isPending
-          ? isSubscribed
-            ? "Unsubscribing..."
-            : "Subscribing..."
-          : isSubscribed
-            ? "Unsubscribe"
-            : "Subscribe"}
+        {isSubscribed ? "Unsubscribe" : "Subscribe"}
       </button>
     </div>
   );
