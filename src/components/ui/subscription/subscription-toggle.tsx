@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useTransition, useState } from "react";
-import { useRouter } from "next/navigation";
 import { subscribe, unsubscribe, prepareSubscription } from "@/lib/actions";
+import { runAfterSubscriptionChange } from "@/lib/subscription-navigation";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type SubscriptionToggleProps = {
   isSubscribed: boolean;
@@ -11,28 +12,30 @@ type SubscriptionToggleProps = {
 export default function SubscriptionToggle({
   isSubscribed,
 }: SubscriptionToggleProps) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Pre-create a subscription token in the background so it's ready when the user clicks subscribe.
   useEffect(() => {
     if (!isSubscribed) {
       prepareSubscription();
     }
   }, [isSubscribed]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     setError(null);
-    startTransition(async () => {
-      const result = isSubscribed ? await unsubscribe() : await subscribe();
+    setLoading(true);
+    const result = isSubscribed ? await unsubscribe() : await subscribe();
 
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-      router.refresh();
-    });
+    if (result.error) {
+      setError(result.error);
+      setLoading(false);
+      return;
+    }
+    runAfterSubscriptionChange(
+      () => router.refresh(),
+      () => setLoading(false),
+    );
   };
 
   return (
@@ -50,16 +53,10 @@ export default function SubscriptionToggle({
             : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         }
         onClick={handleClick}
-        disabled={isPending}
-        aria-disabled={isPending}
+        disabled={loading}
+        aria-disabled={loading}
       >
-        {isPending
-          ? isSubscribed
-            ? "Unsubscribing..."
-            : "Subscribing..."
-          : isSubscribed
-            ? "Unsubscribe"
-            : "Subscribe"}
+        {isSubscribed ? "Unsubscribe" : "Subscribe"}
       </button>
     </div>
   );

@@ -1,28 +1,32 @@
 "use client";
 
-import { useTransition, useState } from "react";
-import { useRouter } from "next/navigation";
 import { subscribe } from "@/lib/actions";
+import { runAfterSubscriptionChange } from "@/lib/subscription-navigation";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type SubscribeButtonProps = {
   className?: string;
 };
 
 export default function SubscribeButton({ className }: SubscribeButtonProps) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     setError(null);
-    startTransition(async () => {
-      const result = await subscribe();
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-      router.refresh();
-    });
+    setLoading(true);
+    const result = await subscribe();
+    if (result.error) {
+      setError(result.error);
+      setLoading(false);
+      return;
+    }
+    runAfterSubscriptionChange(
+      () => router.refresh(),
+      () => setLoading(false),
+    );
   };
 
   return (
@@ -33,9 +37,9 @@ export default function SubscribeButton({ className }: SubscribeButtonProps) {
           "inline-flex items-center px-5 py-3 rounded-xl text-sm font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         }
         onClick={handleSubscribe}
-        disabled={isPending}
+        disabled={loading}
       >
-        {isPending ? "Subscribing..." : "Subscribe"}
+        {loading ? "Subscribing..." : "Subscribe"}
       </button>
       {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
     </div>
