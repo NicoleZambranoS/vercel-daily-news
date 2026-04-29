@@ -23,6 +23,7 @@ export default function StatusPage({
           width={40}
           height={40}
           className="opacity-20"
+          style={{ height: "auto" }}
         />
         <h1 className="text-8xl font-semibold text-black tracking-tight">
           {code}

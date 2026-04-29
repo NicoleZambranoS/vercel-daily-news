@@ -22,6 +22,7 @@ export default function Header() {
                 alt="Vercel Daily"
                 width={28}
                 height={28}
+                style={{ height: "auto" }}
               />
               <span className="font-medium text-xl text-black">
                 Vercel Daily

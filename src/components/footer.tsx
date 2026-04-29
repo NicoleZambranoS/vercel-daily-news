@@ -11,6 +11,7 @@ export default function Footer() {
               alt="Vercel Daily"
               width={28}
               height={28}
+              style={{ height: "auto" }}
             />
             <span className="text-sm text-gray-600">
               © 2026 Vercel Daily. All rights reserved.
