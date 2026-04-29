@@ -27,12 +27,6 @@ export async function getSubscriptionStatus(): Promise<boolean> {
   if (status === "active") return true;
   if (status === "inactive") return false;
 
-  // During a server action's RSC re-render the proxy headers are stale
-  // (they reflect the pre-mutation request). Skip the slow verifySubscription()
-  // call — the router.refresh() that follows will fetch the correct state
-  // through the proxy with updated cookies.
-  if (headersList.get("next-action")) return false;
-
   const token = headersList.get(HEADER_TOKEN);
   if (!token) return false;
 
