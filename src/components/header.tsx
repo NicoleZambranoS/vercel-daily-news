@@ -40,7 +40,7 @@ export default function Header() {
                 href="/search"
                 className="text-sm text-gray-600 hover:text-black transition-colors"
               >
-                Explore
+                Search
               </Link>
             </nav>
           </div>

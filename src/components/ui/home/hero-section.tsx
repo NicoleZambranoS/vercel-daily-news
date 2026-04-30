@@ -42,7 +42,7 @@ export default function HeroSection() {
 
             <div className="flex flex-wrap gap-4">
               <Link href="/search" className="group btn-primary space-x-2">
-                <span>Explore Articles</span>
+                <span>Search Articles</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Suspense

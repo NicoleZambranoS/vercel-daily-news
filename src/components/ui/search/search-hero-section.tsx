@@ -17,7 +17,7 @@ export default function SearchHeroSection() {
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight tracking-tight">
             <span className="bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              Explore Our
+              Search Our
             </span>
             <br />
             <span className="bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
