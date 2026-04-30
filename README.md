@@ -18,27 +18,34 @@ Data-fetching functions in `src/lib/api.ts` use `"use cache"` with `cacheLife()`
 
 - **Breaking news** — 5 minutes (time-sensitive)
 - **Article listings and trending** — 30 minutes
-- **Article details and categories** — 1 hour (max allowed window)
+- **Article details and categories** — 1 hour
+- **Subscription verification** — 30-second stale window, revalidates after 60 seconds
 
-Subscription status is never cached. On article pages it comes from the proxy rewrite (`searchParams.access`). Everywhere else it reads from `cookies()` on every request.
+Subscription status is never cached. It's determined at request time by `getSubscriptionStatus()` in `src/lib/subscription.ts`, which reads headers set by the proxy.
 
 ## Proxy
 
-`src/proxy.ts` for article pages it reads the `subscription-token` cookie and rewrites the URL with `?access=full` or `?access=preview`. The article page then reads `searchParams.access` instead of touching `cookies()` directly, keeping access control at the routing layer.
+`src/proxy.ts` runs on every request and handles access control through request headers. It reads the user's cookies and sets `x-subscription-status` and `x-subscription-token` headers that downstream server components use to determine subscription state.
 
-The rewrite is invisible to the browser — the URL stays clean — and tamper-proof, since the proxy always overrides the `access` param from the real cookie.
+Three cases:
+
+1. **No token cookie** — sets `x-subscription-status: inactive`. User sees the paywall.
+2. **Token + active cookie** (short-lived trust window after subscribing) — sets `x-subscription-status: active`. Skips the slow verification API call so the page loads instantly after a subscribe action.
+3. **Token only** (normal page loads) — sets `x-subscription-token` and leaves status unset. `getSubscriptionStatus()` then calls `verifySubscription()` against the API to confirm the token is valid.
+
+This keeps access control at the routing layer. Server components never touch cookies directly — they read the headers the proxy already resolved.
 
 ## Subscriptions
 
 The API is slow, so subscribing needed a different approach to feel instant.
 
-When a non-subscriber loads any page, the `SubscriptionToggle` component quietly calls a `prepareSubscription` Server Action in the background. That action hits the slow API and stashes the returned token in a module-level store. By the time the user actually clicks "Subscribe," the token is already sitting there waiting.
+When a non-subscriber loads any page, the `SubscriptionToggle` component quietly calls a `prepareSubscription` Server Action in the background. That action hits the API to create a token and stores it in an `httpOnly` cookie. By the time the user clicks "Subscribe," the token is already there.
 
-**Subscribing:** The modal grabs the pre-fetched token, a Server Action sets it as the `subscription-token` cookie, and the page re-renders in place through the proxy — no navigation, no scroll jump, no delay.
+**Subscribing:** The `subscribe` action grabs the pre-created token (or creates one if needed), sets a short-lived `subscription-active` cookie as a trust signal for the proxy, and returns immediately. The actual API activation and verification cache warming happen after the response via `after()` from `next/server`. The page re-renders through `router.refresh()`, and because the proxy sees the trust cookie, the page loads fast without waiting for the slow API.
 
-**Unsubscribing:** A Server Action deletes the cookie and returns immediately. The actual API DELETE call runs after the response via `after()` from `next/server` (fire-and-forget). The page re-renders through the proxy and shows the paywall.
+Once the trust cookie expires (5 seconds), the proxy falls back to real verification via `verifySubscription()`. If the token turns out to be invalid for any reason, the paywall shows up again. If it's valid, the cached verification result is already warm from the `after()` callback, so there's no delay.
 
-Neither action touches cached article data — `revalidatePath` is never called because subscription changes don't affect content.
+**Unsubscribing:** A Server Action deletes both cookies and returns immediately. The actual API DELETE call runs after the response via `after()`. The page re-renders through `router.refresh()` and the proxy sees no cookies, so the paywall shows.
 
 ## Error handling
 
@@ -74,7 +81,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ```
 src/
-├── proxy.ts                  # Access control for article pages
+├── proxy.ts                  # Access control via request headers
 ├── app/
 │   ├── articles/[slug]/      # Article detail with paywall
 │   └── search/               # Search and explore
@@ -84,14 +91,14 @@ src/
 │   └── ui/
 │       ├── home/             # Hero, featured articles, breaking news
 │       ├── search/           # Search input, category filter, results
-│       ├── article/          # Article content, header, trending
-│       └── subscription/     # Subscribe modal and toggle
+│       ├── article/          # Article content, header, paywall, trending
+│       └── subscription/     # Subscribe button and toggle
 ├── hooks/                    # Custom React hooks
 ├── lib/
 │   ├── fetch.ts              # Shared API client
 │   ├── api.ts                # Cached data-fetching functions
 │   ├── actions.ts            # Server Actions (subscribe / unsubscribe / prepare)
-│   ├── subscription-store.ts # Pre-fetched token store
+│   ├── subscription.ts       # Cookie constants and subscription status check
 │   └── format.ts             # Date formatting
 └── types/                    # TypeScript type definitions
 ```
