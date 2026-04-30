@@ -16,6 +16,14 @@ export const metadata: Metadata = {
     title: "Vercel Daily News",
     description:
       "Breaking stories, featured articles, and deep dives for modern web developers.",
+    images: [
+      {
+        url: "/vercel-icon.png",
+        width: 1120,
+        height: 630,
+        alt: "Vercel Daily News",
+      },
+    ],
   },
 };
 
