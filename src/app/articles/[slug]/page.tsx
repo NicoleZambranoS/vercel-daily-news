@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { cacheLife } from "next/cache";
 import { getArticleDetails, getTrendingArticles } from "@/lib/api";
 import ArticleHeader from "@/components/ui/article/article-header";
 import Paywall from "@/components/ui/article/paywall";
@@ -6,8 +9,6 @@ import ArticleBodySkeleton from "@/components/ui/article/article-body-skeleton";
 import FeaturedImage from "@/components/ui/article/featured-image";
 import TrendingArticles from "@/components/ui/article/trending-articles";
 import TrendingArticlesSkeleton from "@/components/ui/article/trending-articles-skeleton";
-import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -47,6 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function TrendingSection({ slug }: { slug: string }) {
+  "use cache";
+  cacheLife("days");
+
   const articles = await getTrendingArticles(slug);
   return <TrendingArticles trendingArticles={articles} />;
 }
@@ -71,8 +75,7 @@ export default async function ArticleDetailPage({ params }: Props) {
         {/* Featured Image */}
         <FeaturedImage src={article.image} alt={article.title} />
 
-        {/* Paywall boundary — only this Suspense is dynamic (reads cookies/headers).
-            Everything above stays fully cached. */}
+        {/* Paywall boundary */}
         <div className="max-w-none mb-16">
           <Suspense fallback={<ArticleBodySkeleton />}>
             <Paywall content={article.content} />

@@ -1,6 +1,7 @@
-import { getCategories } from "@/lib/api";
 import { Metadata } from "next";
 import { Suspense } from "react";
+import { cacheLife } from "next/cache";
+import { getCategories } from "@/lib/api";
 import Articles from "@/components/ui/search/articles";
 import ArticlesSkeleton from "@/components/ui/search/articles-skeleton";
 import SearchHeroSection from "@/components/ui/search/search-hero-section";
@@ -23,6 +24,9 @@ export const metadata: Metadata = {
 };
 
 async function CategoriesSection() {
+  "use cache";
+  cacheLife("days");
+
   const categories = await getCategories();
   return <CategoryFilter categories={categories} />;
 }

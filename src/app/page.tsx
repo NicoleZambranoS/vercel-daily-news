@@ -4,6 +4,7 @@ import FeaturedArticles from "@/components/ui/home/featured-articles";
 import HeroSection from "@/components/ui/home/hero-section";
 import { Suspense } from "react";
 import { Metadata } from "next";
+import { cacheLife } from "next/cache";
 import BreakingNewsSkeleton from "@/components/ui/home/breaking-news-skeleton";
 import FeaturedArticlesSkeleton from "@/components/ui/home/featured-articles-skeleton";
 
@@ -19,11 +20,17 @@ export const metadata: Metadata = {
 };
 
 async function BreakingNewsSection() {
+  "use cache";
+  cacheLife("hours");
+
   const breakingNews = await getBreakingNews();
   return <BreakingNewsBanner news={breakingNews} />;
 }
 
 async function FeaturedArticlesSection() {
+  "use cache";
+  cacheLife("days");
+
   const { articles } = await getArticles({ limit: "6" });
   return <FeaturedArticles featuredArticles={articles} />;
 }
