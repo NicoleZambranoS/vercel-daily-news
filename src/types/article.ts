@@ -28,5 +28,6 @@ export type BreakingNews = {
   headline: string;
   slug: string;
   publishedAt: string;
+  articleId: string;
   category: string;
 };

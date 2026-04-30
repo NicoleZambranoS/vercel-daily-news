@@ -1,5 +1,6 @@
 import { Zap } from "lucide-react";
 import { BreakingNews } from "@/types/article";
+import Link from "next/link";
 
 type BreakingNewsBannerProps = {
   news: BreakingNews | null;
@@ -13,8 +14,8 @@ export default function BreakingNewsBanner({ news }: BreakingNewsBannerProps) {
       {/* Shimmer overlay */}
       <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
 
-      <div className="site-container py-3.5 relative">
-        <div className="flex items-center gap-4 group">
+      <Link href={`/articles/${news.articleId}`}>
+        <div className="site-container py-3.5 relative flex items-center gap-4 group">
           {/* Left badge */}
           <div className="flex items-center gap-2.5 shrink-0">
             <div className="p-1.5 bg-linear-to-r from-yellow-400 to-orange-500 rounded-md shadow-lg shadow-orange-500/30">
@@ -35,7 +36,7 @@ export default function BreakingNewsBanner({ news }: BreakingNewsBannerProps) {
             </span>
           </div>
         </div>
-      </div>
+      </Link>
     </div>
   );
 }
