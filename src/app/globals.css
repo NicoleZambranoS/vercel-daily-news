@@ -19,7 +19,7 @@ body {
 
 @layer utilities {
   .btn-primary {
-    @apply inline-flex items-center bg-black text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-xl shadow-black/10 hover:bg-gray-900 hover:shadow-2xl hover:shadow-black/20 hover:scale-105;
+    @apply text-sm inline-flex items-center bg-black text-white px-5 py-3 rounded-xl font-semibold transition-all shadow-xl shadow-black/10 hover:bg-gray-900 hover:shadow-2xl hover:shadow-black/20 hover:scale-105;
   }
 
   .btn-gradient {
