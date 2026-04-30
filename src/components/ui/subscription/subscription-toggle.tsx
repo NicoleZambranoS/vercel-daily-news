@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useTransition, useState } from "react";
-import { useRouter } from "next/navigation";
-import { subscribe, unsubscribe, prepareSubscription } from "@/lib/actions";
+import { useEffect } from "react";
+import { prepareSubscription } from "@/lib/actions";
+import { useSubscription } from "./subscription-provider";
 
 type SubscriptionToggleProps = {
   isSubscribed: boolean;
@@ -11,9 +11,8 @@ type SubscriptionToggleProps = {
 export default function SubscriptionToggle({
   isSubscribed,
 }: SubscriptionToggleProps) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const { handleSubscribe, handleUnsubscribe, error, isPending } =
+    useSubscription();
 
   // Pre-create a subscription token in the background so it's ready when the user clicks subscribe.
   useEffect(() => {
@@ -21,19 +20,6 @@ export default function SubscriptionToggle({
       prepareSubscription();
     }
   }, [isSubscribed]);
-
-  const handleClick = () => {
-    setError(null);
-    startTransition(async () => {
-      const result = isSubscribed ? await unsubscribe() : await subscribe();
-
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-      router.refresh();
-    });
-  };
 
   return (
     <div className="flex items-center gap-2">
@@ -49,7 +35,7 @@ export default function SubscriptionToggle({
             ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             : "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-linear-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         }
-        onClick={handleClick}
+        onClick={isSubscribed ? handleUnsubscribe : handleSubscribe}
         disabled={isPending}
         aria-disabled={isPending}
       >

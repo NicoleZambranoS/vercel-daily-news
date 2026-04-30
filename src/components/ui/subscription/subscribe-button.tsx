@@ -1,29 +1,13 @@
 "use client";
 
-import { useTransition, useState } from "react";
-import { useRouter } from "next/navigation";
-import { subscribe } from "@/lib/actions";
+import { useSubscription } from "./subscription-provider";
 
 type SubscribeButtonProps = {
   className?: string;
 };
 
 export default function SubscribeButton({ className }: SubscribeButtonProps) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  const handleSubscribe = () => {
-    setError(null);
-    startTransition(async () => {
-      const result = await subscribe();
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-      router.refresh();
-    });
-  };
+  const { handleSubscribe, error, isPending } = useSubscription();
 
   return (
     <div>
