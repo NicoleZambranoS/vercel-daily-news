@@ -67,10 +67,9 @@ export async function getTrendingArticles(exclude: string): Promise<Article[]> {
   cacheLife({ stale: 300, revalidate: 1800, expire: 3600 });
 
   try {
-    const res = await fetchApi<Article[]>(
-      `/articles/trending?exclude=${exclude}`,
-    );
-    return res.data ?? [];
+    const res = await fetchApi<Article[]>(`/articles/trending`);
+
+    return (res.data ?? []).filter((article) => article.slug !== exclude);
   } catch {
     return [];
   }
