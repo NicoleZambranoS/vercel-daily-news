@@ -61,6 +61,8 @@ Each route segment has its own `error.tsx` and the article route has a `not-foun
 | Icons           | lucide-react            |
 | Package manager | pnpm                    |
 
+**Note**: I'm using the Next.js 16.3.0-canary.5 version because with other 16 versions the app was having loading issues on article page when subscribe and unsubscribe actions were performed, Reference for the issue: https://github.com/vercel/next.js/issues/86055. This version fixes the issue.
+
 ## Getting Started
 
 ```bash
