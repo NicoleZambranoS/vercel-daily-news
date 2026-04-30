@@ -48,7 +48,7 @@ export async function subscribe(): Promise<ActionResult> {
   // Set the active cookie so the proxy can skip verification on the immediate router.refresh() after activation.
   cookieStore.set(SUBSCRIPTION_ACTIVE_COOKIE, token, {
     ...COOKIE_OPTIONS,
-    maxAge: 30,
+    maxAge: 5,
   });
 
   // Activate the subscription behind the scenes
