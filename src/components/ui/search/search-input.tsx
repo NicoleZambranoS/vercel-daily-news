@@ -12,19 +12,16 @@ export default function SearchInput({ placeholder }: { placeholder: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = useDebouncedCallback((term: string) => {
-    const hasActiveQuery = !!searchParams.get("query");
-    // Only update if there's a valid new query, or an existing one that needs clearing
-    if (term.length > 2 || hasActiveQuery) {
-      updateParams({
-        page: "1",
-        query: term.length > 2 ? term : null,
-      });
+    if (term.length === 0) {
+      updateParams({ page: "1", query: null });
+    } else if (term.length >= 3) {
+      updateParams({ page: "1", query: term });
     }
   }, 300);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleSearch.flush();
+      handleSearch.cancel();
       const term = e.currentTarget.value;
       updateParams({ page: "1", query: term || null });
     }
