@@ -8,7 +8,7 @@ export default function SearchHeroSection() {
 
       <div className="site-container py-16 sm:py-20 relative">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/60 backdrop-blur-sm border border-purple-200 rounded-full mb-6 shadow-sm">
+          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full mb-6">
             <Sparkles className="w-4 h-4 text-purple-600" />
             <span className="text-sm font-medium text-gray-700">
               Discover articles
