@@ -21,9 +21,8 @@ export const metadata: Metadata = {
     siteName: "Vercel Daily News",
     images: [
       {
-        // vercel-icon.png from public folder
         url: "/vercel-icon.png",
-        width: 1200,
+        width: 1120,
         height: 630,
         alt: "Vercel Daily News",
       },
